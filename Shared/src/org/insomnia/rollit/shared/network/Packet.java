@@ -8,37 +8,41 @@ import java.util.Arrays;
 
 /**
  * Provides an abstract base for packets that will be send between the server and client.
+ * 
  * @author Ciske
- *
+ * 
  */
 public abstract class Packet {
 	private final PacketType type;
-	
+
 	Packet(PacketType type) {
 		this.type = type;
 	}
-	
+
 	/**
 	 * Returns the type of the packet.
 	 */
 	public PacketType getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Serializes the packet to an array of bytes that can be send across the network.
 	 */
 	public byte[] serialize() {
 		byte[] data = serializeData();
 		ByteBuffer buffer = ByteBuffer.allocate(5 + data.length);
-		
+
+		buffer.putInt(data.length + 1);
 		buffer.put(type.getType());
-		buffer.putInt(data.length);
-		buffer.put(data);
-		
+
+		if (data.length > 0) {
+			buffer.put(data);
+		}
+
 		return buffer.array();
 	}
-	
+
 	/**
 	 * Deserializes the array of bytes to a new <code>Packet</code> instance.
 	 * @param serializedData The serialized data as received over the network.
@@ -46,47 +50,36 @@ public abstract class Packet {
 	 */
 	public static Packet deserialize(byte[] serializedData) {
 		Packet result = null;
-		
-		if(serializedData.length >= 5) {
-			try (ByteArrayInputStream byteStream = new ByteArrayInputStream(serializedData); DataInputStream inputStream = new DataInputStream(byteStream)) {
-				byte type = inputStream.readByte();
-				PacketType packetType = PacketType.fromByte(type);
-				
-				if(packetType != null) {
-					int dataLength = inputStream.readInt();
-			
-					if(dataLength >= 0) {
-						if (5 + dataLength == serializedData.length) {
-							byte[] data = Arrays.copyOfRange(serializedData, 5, serializedData.length);
-					
-							result = PacketFactory.createPacket(packetType);
-							
-							if(result != null) {
-								result.deserializeData(data);
-							} else {
-								System.err.println("Could not create packet instance for packet type: " + packetType);
-							}
-						} else {	
-							System.err.println("Invalid packet length (expected " + (5 + dataLength) + " received " + serializedData.length + ")");
-						}
-					} else {
-						System.err.println("Packet data length cannot be negative: " + dataLength);
-					}
+
+		try (ByteArrayInputStream byteStream = new ByteArrayInputStream(serializedData); DataInputStream inputStream = new DataInputStream(byteStream)) {
+			byte type = inputStream.readByte();
+			PacketType packetType = PacketType.fromByte(type);
+
+			if (packetType != null) {
+				byte[] data = serializedData.length == 1 ? new byte[0] : Arrays.copyOfRange(serializedData, 1, serializedData.length);
+
+				result = PacketFactory.createPacket(packetType);
+
+				if (result != null) {
+					result.deserializeData(data);
 				} else {
-					System.err.println("Invalid packet type: " + type);
+					System.err.println("Could not create packet instance for packet type: " + packetType);
 				}
-			} catch(IOException e) {
-				System.err.println("Could not read packet: " + e.getMessage());
+			} else {
+				System.err.println("Invalid packet type: " + type);
 			}
+		} catch (IOException e) {
+			System.err.println("Could not read packet: " + e.getMessage());
 		}
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * Serializes all fields into a single array of bytes.
 	 */
 	protected abstract byte[] serializeData();
+
 	/**
 	 * Deserializes the data and sets all fields to their corresponding value.
 	 * @param data The serialized data as returned by <code>serializeData()</code>.
