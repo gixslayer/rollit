@@ -29,8 +29,9 @@ public enum PacketType {
 	
 	//////// byte to PacketType conversion
 	// Allows for easy, safe, fast and no maintenance conversion from a byte to the corresponding PacketType
-	// All PacketType enum values are expected to have a unique value. If this is not the case duplicate values will overwrite and can never be converted to. 
-	private static final Map<Byte, PacketType> typeMapping = new HashMap<>();
+	// All PacketType enum values are expected to have a unique value. If this is not the case duplicate values will overwrite and can never be converted to.
+	// Jml not accepting legal Java syntax, who makes this shit.
+	private static final Map<Byte, PacketType> typeMapping = new HashMap<Byte, PacketType>(); //HashMap<>();
 	
 	/**
 	 * Converts a <code>Byte</code> to the corresponding <code>PacketType</code>.

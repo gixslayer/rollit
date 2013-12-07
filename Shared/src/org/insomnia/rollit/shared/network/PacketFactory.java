@@ -9,7 +9,8 @@ import java.util.Map;
  *
  */
 public final class PacketFactory {
-	private static final Map<PacketType, Class<? extends Packet>> packetMapping = new HashMap<>(); 
+	// Jml not accepting legal Java syntax, who makes this shit.
+	private static final Map<PacketType, Class<? extends Packet>> packetMapping = new HashMap<PacketType, Class<? extends Packet>>(); //HashMap<>();
 	
 	static {
 		// Register all classes that extend packet here so the factory knows about them.
