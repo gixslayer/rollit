@@ -20,20 +20,20 @@ public final class PacketFactory {
 	
 	/**
 	 * Produces a new <code>Packet</code> instance that corresponds to the given <code>PacketType</code>.
+	 * If the <code>PacketType</code> could not be matched to a <code>Packet</code> class an <code>IllegalArgumentException</code> is thrown.
 	 * @param type The type of packet to create.
-	 * @return <code>null</code> if no instance could be created. Otherwise a new instance of a class that extends <code>Packet</code> is returned.
+	 * @return A new instance of a class that extends <code>Packet</code>.
+	 * @throws ReflectiveOperationException If no new instance could be created.
 	 */
-	public static Packet createPacket(PacketType type) {
-		Packet result = null;
-		
-		if(packetMapping.containsKey(type)) {
-			try {
-				result = packetMapping.get(type).newInstance();
-			} catch (InstantiationException|IllegalAccessException e) {
-				e.printStackTrace();
-			}
+	public static Packet createPacket(PacketType type) throws ReflectiveOperationException {
+		if(!packetMapping.containsKey(type)) {
+			throw new IllegalArgumentException("Unkown packet type " + type);
 		}
 		
-		return result;
+		try {
+			return packetMapping.get(type).newInstance();
+		} catch (InstantiationException|IllegalAccessException e) {
+			throw e;
+		}
 	}
 }
