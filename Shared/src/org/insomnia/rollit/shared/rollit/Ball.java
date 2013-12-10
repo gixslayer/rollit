@@ -32,8 +32,8 @@ public enum Ball {
 
 	private byte value;
 
-	Ball(byte value) {
-		this.value = value;
+	Ball(byte argValue) {
+		this.value = argValue;
 	}
 
 	/**

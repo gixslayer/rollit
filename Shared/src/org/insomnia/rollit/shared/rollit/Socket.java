@@ -31,11 +31,11 @@ final class Socket {
 
 	/**
 	 * Sets the ball that is currently in the socket.
-	 * @param ball The ball to set in the socket. The value can be <code>Ball.None</code> to make
+	 * @param argBall The ball to set in the socket. The value can be <code>Ball.None</code> to make
 	 * the socket empty.
 	 */
-	public void setBall(Ball ball) {
-		this.ball = ball;
+	public void setBall(Ball argBall) {
+		this.ball = argBall;
 	}
 
 	/**

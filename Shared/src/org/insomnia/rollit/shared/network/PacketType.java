@@ -16,8 +16,8 @@ public enum PacketType {
 
 	private byte type;
 
-	PacketType(byte type) {
-		this.type = type;
+	PacketType(byte argType) {
+		this.type = argType;
 	}
 
 	/**

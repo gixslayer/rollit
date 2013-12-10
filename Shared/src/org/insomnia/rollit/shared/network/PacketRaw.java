@@ -9,26 +9,26 @@ public class PacketRaw extends Packet {
 		this(DEFAULT_DATA);
 	}
 
-	PacketRaw(byte[] data) {
+	PacketRaw(byte[] argData) {
 		super(PacketType.Raw);
 
-		this.data = data;
+		this.data = argData;
 	}
 
 	public byte[] getData() {
 		return data;
 	}
 
-	public void setData(byte[] data) {
-		this.data = data;
+	public void setData(byte[] argData) {
+		this.data = argData;
 	}
 
 	protected byte[] serializeData() {
 		return data;
 	}
 
-	protected void deserializeData(byte[] data) {
-		this.data = data;
+	protected void deserializeData(byte[] argData) {
+		this.data = argData;
 	}
 
 }

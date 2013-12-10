@@ -13,8 +13,8 @@ public abstract class Packet {
 
 	private final PacketType type;
 
-	Packet(PacketType type) {
-		this.type = type;
+	Packet(PacketType argType) {
+		this.type = argType;
 	}
 
 	/**

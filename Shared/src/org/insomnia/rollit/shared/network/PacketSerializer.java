@@ -162,13 +162,13 @@ public final class PacketSerializer {
 	 * Serializes an array of bytes to the underlying byte buffer. If the underlying byte buffer
 	 * doesn't have enough free room it is expanded to ensure enough room is available.
 	 * @param value The value to serialize.
-	 * @param offset The offset within the value to start from.
+	 * @param argOffset The offset within the value to start from.
 	 * @param length The amount of bytes to serialize from the value.
 	 */
-	public void addBytes(byte[] value, int offset, int length) {
+	public void addBytes(byte[] value, int argOffset, int length) {
 		ensureAvailable(length);
 
-		System.arraycopy(value, offset, buffer, this.offset, length);
+		System.arraycopy(value, argOffset, buffer, this.offset, length);
 
 		this.offset += length;
 	}

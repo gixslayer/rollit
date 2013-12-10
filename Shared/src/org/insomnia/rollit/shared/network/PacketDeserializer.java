@@ -15,10 +15,10 @@ public final class PacketDeserializer {
 
 	/**
 	 * Creates a new packet deserializer.
-	 * @param buffer The byte buffer to deserialize data from.
+	 * @param argBuffer The byte buffer to deserialize data from.
 	 */
-	public PacketDeserializer(byte[] buffer) {
-		this.buffer = buffer;
+	public PacketDeserializer(byte[] argBuffer) {
+		this.buffer = argBuffer;
 		this.bytesRead = new AtomicInteger();
 		this.offset = 0;
 	}
