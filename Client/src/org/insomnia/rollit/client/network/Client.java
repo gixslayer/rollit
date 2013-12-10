@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.insomnia.rollit.shared.network.Packet;
+import org.insomnia.rollit.shared.network.PacketFormatException;
 
 public final class Client implements Runnable {
 	private final Socket socket;
@@ -22,7 +23,8 @@ public final class Client implements Runnable {
 	private byte[] currentPacket;
 	private byte[] preBuffer;
 
-	public Client(String host, int port, IClientHandler handler) throws UnknownHostException, IOException {
+	public Client(String host, int port, IClientHandler handler) throws UnknownHostException,
+			IOException {
 		this.socket = new Socket(host, port);
 		this.outStream = socket.getOutputStream();
 		this.inStream = socket.getInputStream();
@@ -89,9 +91,15 @@ public final class Client implements Runnable {
 	private void finishPacket(byte[] data) {
 		processPartialPacket(data, bytesToReceive);
 
-		Packet packet = Packet.deserialize(currentPacket);
+		Packet packet;
+		try {
+			packet = Packet.deserialize(currentPacket);
 
-		handler.packetReceived(packet);
+			handler.packetReceived(packet);
+		} catch (PacketFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		currentPacket = null;
 	}
