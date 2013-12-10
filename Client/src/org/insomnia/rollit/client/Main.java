@@ -7,11 +7,11 @@ import org.insomnia.rollit.client.network.IClientHandler;
 import org.insomnia.rollit.shared.network.Packet;
 
 public class Main implements IClientHandler {
-	private static Client client;
+	// private static Client client;
 
 	public static void main(String[] args) {
 		try {
-			client = new Client("127.0.0.1", 4096, new Main());
+			new Client("127.0.0.1", 4096, new Main());
 		} catch (IOException e) {
 			System.err.println(e.getMessage());
 		}

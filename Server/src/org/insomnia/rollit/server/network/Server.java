@@ -1,7 +1,6 @@
 package org.insomnia.rollit.server.network;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,7 +21,6 @@ public final class Server implements Runnable {
 			try {
 				Socket socket = serverSocket.accept();
 				OutputStream outStream = socket.getOutputStream();
-				InputStream inStream = socket.getInputStream();
 				byte[] buffer = new byte[4096];
 
 				System.out.println("Server: connection: " + socket.getInetAddress().toString());
