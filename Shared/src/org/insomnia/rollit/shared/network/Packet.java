@@ -10,7 +10,7 @@ import java.util.Arrays;
  * 
  */
 public abstract class Packet {
-	public static final int PACKET_HEADER_SIZE = 5;
+	public static final int PACKET_HEADER_SIZE = 1;
 
 	private final PacketType type;
 
