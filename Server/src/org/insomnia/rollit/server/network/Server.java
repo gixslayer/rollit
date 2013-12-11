@@ -1,50 +1,182 @@
 package org.insomnia.rollit.server.network;
 
+import java.io.Closeable;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public final class Server implements Runnable {
+import org.insomnia.rollit.shared.network.Packet;
+
+public final class Server implements Runnable, Closeable {
+	public static final int INVALID_CLIENT_ID = -1;
+	public static final String MANUAL_SERVER_SHUTDOWN = "Manual shutdown of server";
+
+	private final IServerHandler serverHandler;
+	private final Map<Integer, Client> clients;
+	private int lastClientId;
 	private ServerSocket serverSocket;
-	private volatile boolean keepRunning;
+	private volatile boolean keepListening;
 
-	public Server(int port) throws IOException {
-		serverSocket = new ServerSocket(port);
-		keepRunning = true;
+	public Server(int port, IServerHandler handler) {
+		this.serverHandler = handler;
+		this.clients = new ConcurrentHashMap<Integer, Client>();
+		this.lastClientId = 0;
+		this.keepListening = true;
 
-		new Thread(this).start();
+		try {
+			// Create server socket.
+			this.serverSocket = new ServerSocket(port);
+
+			// Start the listen thread.
+			new Thread(this).start();
+
+			// Signal the handler the server started listening successfully.
+			serverHandler.listening(port);
+		} catch (IOException e) {
+			// Signal the handler the server could not start listening.
+			serverHandler.listenFailed(port);
+		}
 	}
 
 	public void run() {
-		while (keepRunning) {
+		while (keepListening) {
 			try {
 				Socket socket = serverSocket.accept();
-				OutputStream outStream = socket.getOutputStream();
-				byte[] buffer = new byte[4096];
+				int clientId = getNewClientId();
 
-				System.out.println("Server: connection: " + socket.getInetAddress().toString());
+				if (clientId != INVALID_CLIENT_ID) {
+					Client client = new Client(this, clientId, socket);
 
-				outStream.write(buffer, 0, 16);
-				outStream.flush();
-				outStream.write(buffer, 0, 14);
-				outStream.flush();
-				outStream.write(buffer, 0, 18);
-				outStream.flush();
-				outStream.write(buffer, 0, 12);
-				outStream.flush();
+					if (client.startReceiving()) {
+						clients.put(clientId, client);
 
-				// socket.close();
-
+						serverHandler.clientConnected(clientId);
+					} else {
+						serverHandler.clientRefused("Client could not start receiving");
+					}
+				} else {
+					serverHandler.clientRefused("Could not generate client id");
+				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				stopListening("IOException in listen thread: " + e.getMessage());
+			}
+		}
+	}
+
+	public void close() {
+		disconnectAll();
+		stopListening();
+
+		if (serverSocket != null) {
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// Simply ignore as there is no sensible thing to do.
+				// Checkstyle will whine about empty statement so do *something* to satisfy it.
+				serverSocket.equals(null);
+			}
+		}
+	}
+
+	private synchronized void stopListening(String reason) {
+		// This method should only be executed once.
+		if (keepListening) {
+			keepListening = false;
+
+			serverHandler.stopped(reason);
+		}
+	}
+
+	private int getNewClientId() {
+		int currentId = lastClientId;
+
+		while (clients.containsKey(currentId) && currentId != INVALID_CLIENT_ID) {
+			if (currentId == Integer.MAX_VALUE) {
+				currentId = 0;
+			} else {
+				currentId++;
+
+				if (currentId == lastClientId) {
+					currentId = INVALID_CLIENT_ID;
+				}
 			}
 		}
 
-		System.out.println("exit");
+		if (currentId != INVALID_CLIENT_ID) {
+			lastClientId = currentId;
+		}
+
+		return currentId;
 	}
 
-	public void stop() {
-		keepRunning = false;
+	// ////// Client callbacks
+	protected synchronized void clientDisconnected(int clientId) {
+		clients.remove(clientId);
+
+		serverHandler.clientConnected(clientId);
+	}
+
+	protected synchronized void clientSendData(int clientId, int bytes) {
+		serverHandler.dataSend(clientId, bytes);
+	}
+
+	protected synchronized void clientSendPacket(int clientId, Packet packet) {
+		serverHandler.packetSend(clientId, packet);
+	}
+
+	protected synchronized void clientReceivedData(int clientId, int bytes) {
+		serverHandler.dataReceived(clientId, bytes);
+	}
+
+	protected synchronized void clientReceivedPacket(int clientId, Packet packet) {
+		serverHandler.packetReceived(clientId, packet);
+	}
+
+	protected synchronized void clientDroppedPacket(int clientId, String reason) {
+		serverHandler.packetDropped(clientId, reason);
+	}
+
+	protected synchronized void clientFailedSendPacket(int clientId, Packet packet) {
+		serverHandler.packetSendFailed(clientId, packet);
+	}
+
+	// ////// User interaction
+	public void stopListening() {
+		stopListening(MANUAL_SERVER_SHUTDOWN);
+	}
+
+	public boolean isClientConnected(int clientId) {
+		return clients.containsKey(clientId);
+	}
+
+	public void send(int clientId, Packet packet) {
+		if (isClientConnected(clientId)) {
+			clients.get(clientId).send(packet);
+		}
+	}
+
+	public void sendAll(Packet packet) {
+		for (Client client : clients.values()) {
+			client.send(packet);
+		}
+	}
+
+	public void disconnect(int clientId) {
+		if (isClientConnected(clientId)) {
+			clients.get(clientId).disconnect();
+		}
+	}
+
+	public void disconnectAll() {
+		Iterator<Client> it = clients.values().iterator();
+
+		while (it.hasNext()) {
+			Client client = it.next();
+
+			client.disconnect();
+		}
 	}
 }
