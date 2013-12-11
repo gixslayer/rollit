@@ -20,25 +20,11 @@ public final class Server implements Runnable, Closeable {
 	private ServerSocket serverSocket;
 	private volatile boolean keepListening;
 
-	public Server(int port, IServerHandler handler) {
+	public Server(IServerHandler handler) {
 		this.serverHandler = handler;
 		this.clients = new ConcurrentHashMap<Integer, Client>();
 		this.lastClientId = 0;
 		this.keepListening = true;
-
-		try {
-			// Create server socket.
-			this.serverSocket = new ServerSocket(port);
-
-			// Start the listen thread.
-			new Thread(this).start();
-
-			// Signal the handler the server started listening successfully.
-			serverHandler.listening(port);
-		} catch (IOException e) {
-			// Signal the handler the server could not start listening.
-			serverHandler.listenFailed(port);
-		}
 	}
 
 	public void run() {
@@ -116,7 +102,7 @@ public final class Server implements Runnable, Closeable {
 	protected synchronized void clientDisconnected(int clientId) {
 		clients.remove(clientId);
 
-		serverHandler.clientConnected(clientId);
+		serverHandler.clientDisconnected(clientId);
 	}
 
 	protected synchronized void clientSendData(int clientId, int bytes) {
@@ -144,6 +130,22 @@ public final class Server implements Runnable, Closeable {
 	}
 
 	// ////// User interaction
+	public void startListening(int port) {
+		try {
+			// Create server socket.
+			this.serverSocket = new ServerSocket(port);
+
+			// Start the listen thread.
+			new Thread(this).start();
+
+			// Signal the handler the server started listening successfully.
+			serverHandler.listening(port);
+		} catch (IOException e) {
+			// Signal the handler the server could not start listening.
+			serverHandler.listenFailed(port);
+		}
+	}
+
 	public void stopListening() {
 		stopListening(MANUAL_SERVER_SHUTDOWN);
 	}
