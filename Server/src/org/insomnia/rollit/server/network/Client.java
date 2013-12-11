@@ -8,9 +8,13 @@ import java.net.Socket;
 import org.insomnia.rollit.shared.network.Packet;
 
 final class Client implements Runnable {
+	public static final int RECEIVE_BUFFER_SIZE = 4096;
+
 	private final Socket socket;
 	private final Server server;
 	private final int clientId;
+	private final byte[] receiveBuffer;
+	private final PacketBuffer packetBuffer;
 	private InputStream inputStream;
 	private OutputStream outputStream;
 	private volatile boolean keepReceiving;
@@ -19,6 +23,8 @@ final class Client implements Runnable {
 		this.socket = argSocket;
 		this.server = argServer;
 		this.clientId = argClientId;
+		this.receiveBuffer = new byte[RECEIVE_BUFFER_SIZE];
+		this.packetBuffer = new PacketBuffer(argClientId, argServer);
 		this.keepReceiving = true;
 	}
 
@@ -42,10 +48,26 @@ final class Client implements Runnable {
 
 	public void run() {
 		while (keepReceiving) {
-			// to avoid Checkstyle whining for now.
-			int temp = 0;
+			try {
+				int bytesReceived = inputStream.read(receiveBuffer);
 
-			// TODO: Implement packet receiving.
+				if (bytesReceived >= 1) {
+					server.clientReceivedData(clientId, bytesReceived);
+
+					packetBuffer.processData(receiveBuffer, 0, bytesReceived);
+
+					while (packetBuffer.isPacketAvailable()) {
+						Packet packet = packetBuffer.nextPacket();
+
+						server.clientReceivedPacket(clientId, packet);
+					}
+				} else {
+					// End of stream.
+					disconnect();
+				}
+			} catch (IOException e) {
+				disconnect();
+			}
 		}
 	}
 
