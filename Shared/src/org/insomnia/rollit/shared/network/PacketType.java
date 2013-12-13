@@ -12,7 +12,12 @@ public enum PacketType {
 	/**
 	 * A raw packet which contains an array of bytes.
 	 */
-	Raw((byte) 0);
+	Raw((byte) 0),
+	/**
+	 * A packet that is send when a client wants to connect to the server. It will initially put the
+	 * client in the lobby and assign a name to the client.
+	 */
+	Connect((byte) 1);
 
 	private byte type;
 

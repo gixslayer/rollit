@@ -5,7 +5,7 @@ public class PacketRaw extends Packet {
 
 	private byte[] data;
 
-	PacketRaw() {
+	public PacketRaw() {
 		this(DEFAULT_DATA);
 	}
 

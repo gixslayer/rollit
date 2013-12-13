@@ -5,14 +5,20 @@ import java.util.Scanner;
 import org.insomnia.rollit.server.network.IServerHandler;
 import org.insomnia.rollit.server.network.Server;
 import org.insomnia.rollit.shared.network.Packet;
+import org.insomnia.rollit.shared.network.PacketConnect;
+import org.insomnia.rollit.shared.network.PacketRaw;
 
 public final class Main implements IServerHandler {
 	private final Server server;
 	private final Scanner scanner;
+	private final RoomManager roomManager;
+	private final PlayerManager playerManager;
 
 	public Main() {
 		this.server = new Server(this);
 		this.scanner = new Scanner(System.in);
+		this.roomManager = new RoomManager();
+		this.playerManager = new PlayerManager();
 	}
 
 	public void startListening() {
@@ -26,8 +32,10 @@ public final class Main implements IServerHandler {
 			if (port >= 0 && port < 65536) {
 				server.startListening(port);
 			} else {
-				System.out
-						.println("Invalid port number " + port + " (must be between 0 and 65536)");
+				// Split up println to get better formatting (prevents ugly line wrapping).
+				String message = "Invalid port number " + port + " (must be between 0 and 65536)";
+
+				System.out.println(message);
 
 				startListening();
 			}
@@ -66,8 +74,8 @@ public final class Main implements IServerHandler {
 	}
 
 	public void packetReceived(int clientId, Packet packet) {
-		// TODO Auto-generated method stub
-
+		playerManager.handlePacket(clientId, packet);
+		roomManager.handlePacket(clientId, packet);
 	}
 
 	public void packetDropped(int clientId, String reason) {
@@ -97,6 +105,13 @@ public final class Main implements IServerHandler {
 
 	// ////// Entry point
 	public static void main(String[] args) {
-		new Main().startListening();
+		// new Main().startListening();
+
+		Main m = new Main();
+
+		m.packetReceived(0, new PacketConnect("test"));
+		m.packetReceived(0, new PacketRaw());
+		m.packetReceived(0, new PacketRaw());
+		m.packetReceived(0, new PacketConnect("testw"));
 	}
 }
