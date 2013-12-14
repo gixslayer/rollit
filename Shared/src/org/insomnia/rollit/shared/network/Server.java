@@ -1,4 +1,4 @@
-package org.insomnia.rollit.server.network;
+package org.insomnia.rollit.shared.network;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -8,21 +8,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.insomnia.rollit.shared.network.Packet;
-
 public final class Server implements Runnable, Closeable {
 	public static final int INVALID_CLIENT_ID = -1;
 	public static final String MANUAL_SERVER_SHUTDOWN = "Manual shutdown of server";
 
-	private final IServerHandler serverHandler;
-	private final Map<Integer, Client> clients;
+	private final ServerHandler serverHandler;
+	private final Map<Integer, ServerClient> clients;
 	private int lastClientId;
 	private ServerSocket serverSocket;
 	private volatile boolean keepListening;
 
-	public Server(IServerHandler handler) {
+	public Server(ServerHandler handler) {
 		this.serverHandler = handler;
-		this.clients = new ConcurrentHashMap<Integer, Client>();
+		this.clients = new ConcurrentHashMap<Integer, ServerClient>();
 		this.lastClientId = 0;
 		this.keepListening = true;
 	}
@@ -34,7 +32,7 @@ public final class Server implements Runnable, Closeable {
 				int clientId = getNewClientId();
 
 				if (clientId != INVALID_CLIENT_ID) {
-					Client client = new Client(this, clientId, socket);
+					ServerClient client = new ServerClient(this, clientId, socket);
 
 					if (client.startReceiving()) {
 						clients.put(clientId, client);
@@ -105,16 +103,8 @@ public final class Server implements Runnable, Closeable {
 		serverHandler.clientDisconnected(clientId);
 	}
 
-	protected synchronized void clientSendData(int clientId, int bytes) {
-		serverHandler.dataSend(clientId, bytes);
-	}
-
 	protected synchronized void clientSendPacket(int clientId, Packet packet) {
 		serverHandler.packetSend(clientId, packet);
-	}
-
-	protected synchronized void clientReceivedData(int clientId, int bytes) {
-		serverHandler.dataReceived(clientId, bytes);
 	}
 
 	protected synchronized void clientReceivedPacket(int clientId, Packet packet) {
@@ -161,7 +151,7 @@ public final class Server implements Runnable, Closeable {
 	}
 
 	public void sendAll(Packet packet) {
-		for (Client client : clients.values()) {
+		for (ServerClient client : clients.values()) {
 			client.send(packet);
 		}
 	}
@@ -173,10 +163,10 @@ public final class Server implements Runnable, Closeable {
 	}
 
 	public void disconnectAll() {
-		Iterator<Client> it = clients.values().iterator();
+		Iterator<ServerClient> it = clients.values().iterator();
 
 		while (it.hasNext()) {
-			Client client = it.next();
+			ServerClient client = it.next();
 
 			client.disconnect();
 		}

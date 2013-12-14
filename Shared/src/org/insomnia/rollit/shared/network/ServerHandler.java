@@ -1,8 +1,6 @@
-package org.insomnia.rollit.server.network;
+package org.insomnia.rollit.shared.network;
 
-import org.insomnia.rollit.shared.network.Packet;
-
-public interface IServerHandler {
+public interface ServerHandler {
 	public void listening(int port);
 
 	public void listenFailed(int port);
@@ -22,8 +20,4 @@ public interface IServerHandler {
 	public void packetSend(int clientId, Packet packet);
 
 	public void packetSendFailed(int clientId, Packet packet);
-
-	public void dataReceived(int clientId, int bytes);
-
-	public void dataSend(int clientId, int bytes);
 }

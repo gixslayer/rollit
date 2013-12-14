@@ -1,13 +1,11 @@
-package org.insomnia.rollit.server.network;
+package org.insomnia.rollit.shared.network;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import org.insomnia.rollit.shared.network.Packet;
-
-final class Client implements Runnable {
+final class ServerClient implements PacketBufferHandler, Runnable {
 	public static final int RECEIVE_BUFFER_SIZE = 4096;
 
 	private final Socket socket;
@@ -19,12 +17,12 @@ final class Client implements Runnable {
 	private OutputStream outputStream;
 	private volatile boolean keepReceiving;
 
-	Client(Server argServer, int argClientId, Socket argSocket) {
+	ServerClient(Server argServer, int argClientId, Socket argSocket) {
 		this.socket = argSocket;
 		this.server = argServer;
 		this.clientId = argClientId;
 		this.receiveBuffer = new byte[RECEIVE_BUFFER_SIZE];
-		this.packetBuffer = new PacketBuffer(argClientId, argServer);
+		this.packetBuffer = new PacketBuffer(this);
 		this.keepReceiving = true;
 	}
 
@@ -35,7 +33,7 @@ final class Client implements Runnable {
 			inputStream = socket.getInputStream();
 			outputStream = socket.getOutputStream();
 
-			(new Thread(this)).start();
+			(new Thread(this, "ServerClient " + clientId)).start();
 		} catch (IOException e) {
 			// Closing the socket will also close the input/output streams.
 			closeSocket();
@@ -52,8 +50,6 @@ final class Client implements Runnable {
 				int bytesReceived = inputStream.read(receiveBuffer);
 
 				if (bytesReceived >= 1) {
-					server.clientReceivedData(clientId, bytesReceived);
-
 					packetBuffer.processData(receiveBuffer, 0, bytesReceived);
 
 					while (packetBuffer.isPacketAvailable()) {
@@ -89,7 +85,6 @@ final class Client implements Runnable {
 		try {
 			outputStream.write(data);
 
-			server.clientSendData(clientId, data.length);
 			server.clientSendPacket(clientId, packet);
 		} catch (IOException e) {
 			server.clientFailedSendPacket(clientId, packet);
@@ -105,5 +100,9 @@ final class Client implements Runnable {
 
 			closeSocket();
 		}
+	}
+
+	public void packetDropped(String reason) {
+		server.clientDroppedPacket(clientId, reason);
 	}
 }

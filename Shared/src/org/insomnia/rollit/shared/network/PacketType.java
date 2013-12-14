@@ -17,7 +17,20 @@ public enum PacketType {
 	 * A packet that is send when a client wants to connect to the server. It will initially put the
 	 * client in the lobby and assign a name to the client.
 	 */
-	Connect((byte) 1);
+	Connect((byte) 1),
+	/**
+	 * A packet that is send when a client wants to register to the master server.
+	 */
+	Register((byte) 2),
+	/**
+	 * A packet that is send from the master server which contains the response to a query.
+	 */
+	MasterServerResponse((byte) 3),
+	/**
+	 * A packet that is send when a server wants to validate the client's credentials with the
+	 * master server.
+	 */
+	ValidateRegistration((byte) 4);
 
 	private byte type;
 
