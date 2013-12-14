@@ -88,8 +88,8 @@ public final class Main implements ServerHandler {
 
 	}
 
-	public void packetSendFailed(int clientId, Packet packet) {
-		System.out.println("Failed to send packet to client " + clientId);
+	public void packetSendFailed(int clientId, Packet packet, String reason) {
+		System.out.println("Failed to send packet to client " + clientId + " (" + reason + ")");
 
 	}
 
