@@ -19,5 +19,5 @@ public interface ServerHandler {
 
 	public void packetSend(int clientId, Packet packet);
 
-	public void packetSendFailed(int clientId, Packet packet);
+	public void packetSendFailed(int clientId, Packet packet, String reason);
 }

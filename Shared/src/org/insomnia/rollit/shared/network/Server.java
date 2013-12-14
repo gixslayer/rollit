@@ -115,8 +115,8 @@ public final class Server implements Runnable, Closeable {
 		serverHandler.packetDropped(clientId, reason);
 	}
 
-	protected synchronized void clientFailedSendPacket(int clientId, Packet packet) {
-		serverHandler.packetSendFailed(clientId, packet);
+	protected synchronized void clientFailedSendPacket(int clientId, Packet packet, String reason) {
+		serverHandler.packetSendFailed(clientId, packet, reason);
 	}
 
 	// ////// User interaction

@@ -87,7 +87,7 @@ final class ServerClient implements PacketBufferHandler, Runnable {
 
 			server.clientSendPacket(clientId, packet);
 		} catch (IOException e) {
-			server.clientFailedSendPacket(clientId, packet);
+			server.clientFailedSendPacket(clientId, packet, e.getMessage());
 		}
 	}
 
