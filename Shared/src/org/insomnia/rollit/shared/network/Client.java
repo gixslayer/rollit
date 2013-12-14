@@ -7,14 +7,14 @@ import java.net.Socket;
 
 public final class Client implements Runnable {
 	public static final int RECEIVE_BUFFER_SIZE = 4096;
-	public static final String DEFAULT_DISCONNECT_REASON = "Manual disconnect";
+	public static final String DEFAULT_DISCONNECT_REASON = "Manually disconnected";
 
 	private final ClientHandler handler;
 	private final byte[] receiveBuffer;
 	private final PacketBuffer packetBuffer;
-	private volatile Socket socket;
-	private volatile InputStream inputStream;
-	private volatile OutputStream outputStream;
+	private Socket socket;
+	private InputStream inputStream;
+	private OutputStream outputStream;
 	private volatile boolean keepReceiving;
 
 	public Client(ClientHandler argHandler) {

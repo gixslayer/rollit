@@ -6,12 +6,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public final class MasterServer implements Runnable, Closeable {
-	private final MasterServerHandler serverHandler;
+	public static final String DEFAULT_STOP_REASON = "Manually stopped listening";
+
+	private final MasterServerHandler handler;
 	private ServerSocket serverSocket;
 	private volatile boolean keepListening;
 
-	public MasterServer(MasterServerHandler handler) {
-		this.serverHandler = handler;
+	public MasterServer(MasterServerHandler argHandler) {
+		this.handler = argHandler;
 		this.keepListening = true;
 	}
 
@@ -19,7 +21,7 @@ public final class MasterServer implements Runnable, Closeable {
 		while (keepListening) {
 			try {
 				Socket socket = serverSocket.accept();
-				MasterServerClient client = new MasterServerClient(socket, serverHandler);
+				MasterServerClient client = new MasterServerClient(socket, handler);
 
 				client.startReceiving();
 			} catch (IOException e) {
@@ -40,14 +42,14 @@ public final class MasterServer implements Runnable, Closeable {
 		}
 	}
 
-	public synchronized void stopListening(String reason) {
+	private synchronized void stopListening(String reason) {
 		// This method should only be executed once.
 		if (keepListening) {
 			keepListening = false;
 
 			close();
 
-			serverHandler.stopped(reason);
+			handler.stopped(reason);
 		}
 	}
 
@@ -57,13 +59,17 @@ public final class MasterServer implements Runnable, Closeable {
 			this.serverSocket = new ServerSocket(port);
 
 			// Start the listen thread.
-			new Thread(this).start();
+			new Thread(this, "MasterServer listen").start();
 
 			// Signal the handler the server started listening successfully.
-			serverHandler.listening(port);
+			handler.listening(port);
 		} catch (IOException e) {
 			// Signal the handler the server could not start listening.
-			serverHandler.listenFailed(port);
+			handler.listenFailed(port);
 		}
+	}
+
+	public void stopListening() {
+		stopListening(DEFAULT_STOP_REASON);
 	}
 }

@@ -10,19 +10,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class Server implements Runnable, Closeable {
 	public static final int INVALID_CLIENT_ID = -1;
-	public static final String MANUAL_SERVER_SHUTDOWN = "Manual shutdown of server";
+	public static final String DEFAULT_STOP_REASON = "Manually stopped listening";
 
-	private final ServerHandler serverHandler;
+	private final ServerHandler handler;
 	private final Map<Integer, ServerClient> clients;
 	private int lastClientId;
 	private ServerSocket serverSocket;
 	private volatile boolean keepListening;
 
-	public Server(ServerHandler handler) {
-		this.serverHandler = handler;
+	public Server(ServerHandler argHandler) {
+		this.handler = argHandler;
 		this.clients = new ConcurrentHashMap<Integer, ServerClient>();
 		this.lastClientId = 0;
-		this.keepListening = true;
+		this.keepListening = false;
 	}
 
 	public void run() {
@@ -37,12 +37,12 @@ public final class Server implements Runnable, Closeable {
 					if (client.startReceiving()) {
 						clients.put(clientId, client);
 
-						serverHandler.clientConnected(clientId);
+						handler.clientConnected(clientId);
 					} else {
-						serverHandler.clientRefused("Client could not start receiving");
+						handler.clientRefused("Client could not start receiving");
 					}
 				} else {
-					serverHandler.clientRefused("Could not generate client id");
+					handler.clientRefused("Could not generate client id");
 				}
 			} catch (IOException e) {
 				stopListening("IOException in listen thread: " + e.getMessage());
@@ -70,7 +70,7 @@ public final class Server implements Runnable, Closeable {
 		if (keepListening) {
 			keepListening = false;
 
-			serverHandler.stopped(reason);
+			handler.stopped(reason);
 		}
 	}
 
@@ -100,44 +100,52 @@ public final class Server implements Runnable, Closeable {
 	protected synchronized void clientDisconnected(int clientId) {
 		clients.remove(clientId);
 
-		serverHandler.clientDisconnected(clientId);
+		handler.clientDisconnected(clientId);
 	}
 
 	protected synchronized void clientSendPacket(int clientId, Packet packet) {
-		serverHandler.packetSend(clientId, packet);
+		handler.packetSend(clientId, packet);
 	}
 
 	protected synchronized void clientReceivedPacket(int clientId, Packet packet) {
-		serverHandler.packetReceived(clientId, packet);
+		handler.packetReceived(clientId, packet);
 	}
 
 	protected synchronized void clientDroppedPacket(int clientId, String reason) {
-		serverHandler.packetDropped(clientId, reason);
+		handler.packetDropped(clientId, reason);
 	}
 
 	protected synchronized void clientFailedSendPacket(int clientId, Packet packet, String reason) {
-		serverHandler.packetSendFailed(clientId, packet, reason);
+		handler.packetSendFailed(clientId, packet, reason);
 	}
 
 	// ////// User interaction
 	public void startListening(int port) {
+		if (keepListening) {
+			// Split up to get better formatting.
+			String message = "Tried to listen on a server that is already listening.";
+
+			throw new IllegalStateException(message);
+		}
+
 		try {
 			// Create server socket.
 			this.serverSocket = new ServerSocket(port);
+			this.keepListening = true;
 
 			// Start the listen thread.
-			new Thread(this).start();
+			new Thread(this, "Server listen").start();
 
 			// Signal the handler the server started listening successfully.
-			serverHandler.listening(port);
+			handler.listening(port);
 		} catch (IOException e) {
 			// Signal the handler the server could not start listening.
-			serverHandler.listenFailed(port);
+			handler.listenFailed(port);
 		}
 	}
 
 	public void stopListening() {
-		stopListening(MANUAL_SERVER_SHUTDOWN);
+		stopListening(DEFAULT_STOP_REASON);
 	}
 
 	public boolean isClientConnected(int clientId) {

@@ -37,7 +37,7 @@ public class Main implements MasterServerHandler {
 			// Ignore exception.
 			e.equals(null);
 		} finally { // Finally force the server to stop listening.
-			server.stopListening("End of program");
+			server.stopListening();
 		}
 	}
 
