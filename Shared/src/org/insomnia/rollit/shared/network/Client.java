@@ -33,6 +33,7 @@ public final class Client implements Runnable {
 			socket = new Socket(host, port);
 			outputStream = socket.getOutputStream();
 			inputStream = socket.getInputStream();
+			keepReceiving = true;
 
 			handler.connected(host, port);
 

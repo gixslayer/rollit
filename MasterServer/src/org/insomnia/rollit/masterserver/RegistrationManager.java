@@ -2,6 +2,7 @@ package org.insomnia.rollit.masterserver;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,21 +25,26 @@ public final class RegistrationManager {
 	public boolean loadData() {
 		boolean result = true;
 
-		try (InputStream fileInStream = new FileInputStream("registrations.db");
-				DataInputStream inStream = new DataInputStream(fileInStream)) {
+		File file = new File("registrations.db");
 
-			while (fileInStream.available() != 0 && result) {
-				String name = inStream.readUTF();
-				byte[] hash = new byte[PacketRegister.HASH_LENGTH];
+		if (file.exists()) {
+			try (InputStream fileInStream = new FileInputStream("registrations.db");
+					DataInputStream inStream = new DataInputStream(fileInStream)) {
 
-				if (inStream.read(hash) != PacketRegister.HASH_LENGTH) {
-					result = false;
-				} else {
-					registrations.put(name, hash);
+				while (fileInStream.available() != 0 && result) {
+					String name = inStream.readUTF();
+					byte[] hash = new byte[PacketRegister.HASH_LENGTH];
+
+					if (inStream.read(hash) != PacketRegister.HASH_LENGTH) {
+						result = false;
+					} else {
+						registrations.put(name, hash);
+					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				result = false;
 			}
-		} catch (IOException e) {
-			result = false;
 		}
 
 		return result;

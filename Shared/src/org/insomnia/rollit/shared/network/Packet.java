@@ -31,7 +31,7 @@ public abstract class Packet {
 	public byte[] serialize() {
 		byte[] data = serializeData();
 
-		ByteBuffer buffer = ByteBuffer.allocate(PACKET_HEADER_SIZE + data.length);
+		ByteBuffer buffer = ByteBuffer.allocate(PACKET_HEADER_SIZE + data.length + 4);
 
 		buffer.putInt(data.length + PACKET_HEADER_SIZE);
 		buffer.put(type.getType());

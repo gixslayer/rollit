@@ -19,6 +19,9 @@ public final class PacketFactory {
 		// Register all classes that extend packet here so the factory knows about them.
 		// Packets should never have the same packet type!
 		PACKET_MAPPING.put(PacketType.Raw, PacketRaw.class);
+		PACKET_MAPPING.put(PacketType.Register, PacketRegister.class);
+		PACKET_MAPPING.put(PacketType.ValidateRegistration, PacketValidateRegistration.class);
+		PACKET_MAPPING.put(PacketType.MasterServerResponse, PacketMasterServerResponse.class);
 	}
 
 	/**

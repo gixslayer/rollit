@@ -8,6 +8,10 @@ public final class PacketMasterServerResponse extends Packet {
 
 	private int response;
 
+	public PacketMasterServerResponse() {
+		this(0);
+	}
+
 	public PacketMasterServerResponse(int argResponse) {
 		super(PacketType.MasterServerResponse);
 

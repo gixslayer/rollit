@@ -10,6 +10,10 @@ public final class PacketValidateRegistration extends Packet {
 	private String name;
 	private byte[] hash;
 
+	public PacketValidateRegistration() {
+		this(null, null);
+	}
+
 	public PacketValidateRegistration(String argName, byte[] argHash) {
 		super(PacketType.ValidateRegistration);
 

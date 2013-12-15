@@ -10,6 +10,10 @@ public final class PacketRegister extends Packet {
 	private String name;
 	private byte[] hash;
 
+	public PacketRegister() {
+		this(null, null);
+	}
+
 	public PacketRegister(String argName, byte[] argHash) {
 		super(PacketType.Register);
 
