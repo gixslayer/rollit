@@ -4,10 +4,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Constructs packets from raw binary data that can be fed in arbitrary sized chunks.
+ * 
+ * @author Ciske
+ * 
+ */
 final class PacketBuffer {
-	public static final int PACKET_LENGTH_SIZE = PacketUtils.getSize((int) 0);
-	public static final int MIN_PACKET_LENGTH = Packet.PACKET_HEADER_SIZE;
-
 	private final PacketBufferHandler handler;
 	private final List<Packet> completedPackets;
 	private byte[] currentPacket;
@@ -15,12 +18,24 @@ final class PacketBuffer {
 	private byte[] preBuffer;
 	private int bytesToReceive;
 
+	/**
+	 * Creates a new instance of the <code>PacketBuffer</code>.
+	 * 
+	 * @param argHandler The handler that provides the callback methods.
+	 */
 	PacketBuffer(PacketBufferHandler argHandler) {
 		this.handler = argHandler;
 		this.completedPackets = new LinkedList<Packet>();
 		this.bytesToReceive = 0;
 	}
 
+	/**
+	 * Processes an arbitrary size of binary data.
+	 * 
+	 * @param buffer The buffer to read the binary data from.
+	 * @param offset The offset within the buffer to start reading from.
+	 * @param length The amount of bytes to process.
+	 */
 	public void processData(byte[] buffer, int offset, int length) {
 		byte[] data;
 
@@ -41,15 +56,16 @@ final class PacketBuffer {
 	}
 
 	private void beginPacket(byte[] data, int offset, int length) {
-		if (length >= PACKET_LENGTH_SIZE) {
+		if (length >= Packet.PACKET_LENGTH_SIZE) {
 			bytesToReceive = PacketUtils.toInt(data, offset);
 
-			if (bytesToReceive >= MIN_PACKET_LENGTH) {
+			if (bytesToReceive >= Packet.PACKET_TYPE_SIZE) {
 				currentPacket = new byte[bytesToReceive];
 				currentOffset = 0;
 
-				if (length > PACKET_LENGTH_SIZE) {
-					processPacket(data, offset + PACKET_LENGTH_SIZE, length - PACKET_LENGTH_SIZE);
+				if (length > Packet.PACKET_LENGTH_SIZE) {
+					processPacket(data, offset + Packet.PACKET_LENGTH_SIZE, length
+							- Packet.PACKET_LENGTH_SIZE);
 				}
 			} else {
 				handler.packetDropped("Invalid packet length: " + bytesToReceive);
@@ -87,11 +103,23 @@ final class PacketBuffer {
 		}
 	}
 
+	/**
+	 * Returns whether a packet has been successfully constructed and is currently available.
+	 */
 	public boolean isPacketAvailable() {
 		return completedPackets.size() > 0;
 	}
 
+	/**
+	 * Returns the next available packet.
+	 * 
+	 * @throws IllegalStateException If no packets are currently available.
+	 */
 	public Packet nextPacket() {
+		if (!isPacketAvailable()) {
+			throw new IllegalStateException("No packets are currently available");
+		}
+
 		return completedPackets.remove(0);
 	}
 }

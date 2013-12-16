@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A class to simplify packet deserialization.
+ * 
  * @author ciske
  * 
  */
@@ -15,6 +16,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Creates a new packet deserializer.
+	 * 
 	 * @param argBuffer The byte buffer to deserialize data from.
 	 */
 	public PacketDeserializer(byte[] argBuffer) {
@@ -25,6 +27,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>boolean</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public boolean getBool() throws PacketFormatException {
@@ -39,6 +42,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>byte</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public byte getByte() throws PacketFormatException {
@@ -53,6 +57,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>short</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public short getShort() throws PacketFormatException {
@@ -67,6 +72,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>char</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public char getChar() throws PacketFormatException {
@@ -81,6 +87,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>int</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public int getInt() throws PacketFormatException {
@@ -95,6 +102,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>float</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public float getFloat() throws PacketFormatException {
@@ -109,6 +117,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>long</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public long getLong() throws PacketFormatException {
@@ -123,6 +132,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>double</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public double getDouble() throws PacketFormatException {
@@ -137,6 +147,7 @@ public final class PacketDeserializer {
 
 	/**
 	 * Deserializes the next <code>String</code> value from the byte buffer.
+	 * 
 	 * @throws PacketFormatException If the value could not be deserialized.
 	 */
 	public String getString() throws PacketFormatException {
@@ -160,6 +171,7 @@ public final class PacketDeserializer {
 	/**
 	 * Deserializes the next count bytes from the byte buffer and copies the result in a new array
 	 * of bytes.
+	 * 
 	 * @param count The amount of bytes to deserialize from the byte buffer.
 	 * @return A copy of the next count bytes in the byte buffer.
 	 * @throws PacketFormatException If the value could not be deserialized.

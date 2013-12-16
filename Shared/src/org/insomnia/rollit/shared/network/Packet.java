@@ -4,13 +4,26 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
- * Provides an abstract base for packets that will be send between the server and client.
+ * Provides an abstract base for packets that will be send between the server and client. All
+ * classes that inherit this class must have a public empty constructor for the
+ * <code>PacketFactory</code> to function correctly.
  * 
  * @author Ciske
  * 
  */
 public abstract class Packet {
-	public static final int PACKET_HEADER_SIZE = 1;
+	/**
+	 * The size of the packet length section in bytes.
+	 */
+	public static final int PACKET_LENGTH_SIZE = PacketUtils.getSize((int) 0);
+	/**
+	 * The size of the packet type section in bytes.
+	 */
+	public static final int PACKET_TYPE_SIZE = PacketUtils.getSize((byte) 0);
+	/**
+	 * The size of the entire packet header in bytes.
+	 */
+	public static final int PACKET_HEADER_SIZE = PACKET_LENGTH_SIZE + PACKET_TYPE_SIZE;
 
 	private final PacketType type;
 
@@ -31,9 +44,9 @@ public abstract class Packet {
 	public byte[] serialize() {
 		byte[] data = serializeData();
 
-		ByteBuffer buffer = ByteBuffer.allocate(PACKET_HEADER_SIZE + data.length + 4);
+		ByteBuffer buffer = ByteBuffer.allocate(PACKET_HEADER_SIZE + data.length);
 
-		buffer.putInt(data.length + PACKET_HEADER_SIZE);
+		buffer.putInt(data.length + PACKET_TYPE_SIZE);
 		buffer.put(type.getType());
 
 		if (data.length > 0) {
@@ -53,8 +66,8 @@ public abstract class Packet {
 	 */
 	public static Packet deserialize(byte[] serializedData) throws PacketFormatException {
 		// The serialized data must contain at least one byte that specifies the packet type.
-		if (serializedData.length == 0) {
-			throw new PacketFormatException("Missing packet type (length == 0)");
+		if (serializedData.length < PACKET_TYPE_SIZE) {
+			throw new PacketFormatException("Missing packet type");
 		}
 
 		try {
