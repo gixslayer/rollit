@@ -3,6 +3,11 @@ package org.insomnia.rollit.shared.network;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.insomnia.rollit.shared.network.packets.PacketMasterServerResponse;
+import org.insomnia.rollit.shared.network.packets.PacketRaw;
+import org.insomnia.rollit.shared.network.packets.PacketRegister;
+import org.insomnia.rollit.shared.network.packets.PacketValidateRegistration;
+
 /**
  * A <code>Packet</code> factory that will produce new <code>Packet</code> instances corresponding
  * to a given <code>PacketType</code>.

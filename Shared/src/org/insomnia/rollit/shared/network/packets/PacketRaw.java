@@ -1,4 +1,7 @@
-package org.insomnia.rollit.shared.network;
+package org.insomnia.rollit.shared.network.packets;
+
+import org.insomnia.rollit.shared.network.Packet;
+import org.insomnia.rollit.shared.network.PacketType;
 
 public class PacketRaw extends Packet {
 	private static final byte[] DEFAULT_DATA = new byte[0];

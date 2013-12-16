@@ -1,6 +1,12 @@
-package org.insomnia.rollit.shared.network;
+package org.insomnia.rollit.shared.network.packets;
 
-public final class PacketRegister extends Packet {
+import org.insomnia.rollit.shared.network.Packet;
+import org.insomnia.rollit.shared.network.PacketDeserializer;
+import org.insomnia.rollit.shared.network.PacketFormatException;
+import org.insomnia.rollit.shared.network.PacketSerializer;
+import org.insomnia.rollit.shared.network.PacketType;
+
+public final class PacketValidateRegistration extends Packet {
 	/**
 	 * Size of the password hash in bytes.
 	 */
@@ -10,12 +16,12 @@ public final class PacketRegister extends Packet {
 	private String name;
 	private byte[] hash;
 
-	public PacketRegister() {
+	public PacketValidateRegistration() {
 		this(null, null);
 	}
 
-	public PacketRegister(String argName, byte[] argHash) {
-		super(PacketType.Register);
+	public PacketValidateRegistration(String argName, byte[] argHash) {
+		super(PacketType.ValidateRegistration);
 
 		this.name = argName;
 		this.hash = argHash;
@@ -56,5 +62,4 @@ public final class PacketRegister extends Packet {
 
 		this.hash = argHash;
 	}
-
 }

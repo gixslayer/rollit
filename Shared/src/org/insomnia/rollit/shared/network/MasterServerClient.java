@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import org.insomnia.rollit.shared.network.packets.PacketMasterServerResponse;
+
 public final class MasterServerClient implements Runnable {
 	public static final int RECEIVE_BUFFER_SIZE = 4096;
 

@@ -1,4 +1,10 @@
-package org.insomnia.rollit.shared.network;
+package org.insomnia.rollit.shared.network.packets;
+
+import org.insomnia.rollit.shared.network.Packet;
+import org.insomnia.rollit.shared.network.PacketDeserializer;
+import org.insomnia.rollit.shared.network.PacketFormatException;
+import org.insomnia.rollit.shared.network.PacketSerializer;
+import org.insomnia.rollit.shared.network.PacketType;
 
 public final class PacketConnect extends Packet {
 	private String name;

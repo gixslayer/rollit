@@ -14,7 +14,7 @@ public abstract class Packet {
 
 	private final PacketType type;
 
-	Packet(PacketType argType) {
+	protected Packet(PacketType argType) {
 		this.type = argType;
 	}
 
