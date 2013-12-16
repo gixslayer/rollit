@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.insomnia.rollit.shared.network.Client;
 import org.insomnia.rollit.shared.network.ClientHandler;
 import org.insomnia.rollit.shared.network.Packet;
-import org.insomnia.rollit.shared.network.PacketMasterServerResponse;
-import org.insomnia.rollit.shared.network.PacketValidateRegistration;
+import org.insomnia.rollit.shared.network.packets.PacketMasterServerResponse;
+import org.insomnia.rollit.shared.network.packets.PacketValidateRegistration;
 
 public class Main implements ClientHandler {
 	private final Client client;

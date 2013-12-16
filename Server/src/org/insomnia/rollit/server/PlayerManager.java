@@ -3,7 +3,7 @@ package org.insomnia.rollit.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.insomnia.rollit.shared.network.PacketConnect;
+import org.insomnia.rollit.shared.network.packets.PacketConnect;
 
 public final class PlayerManager extends Manager {
 	private final Map<Integer, Player> players;

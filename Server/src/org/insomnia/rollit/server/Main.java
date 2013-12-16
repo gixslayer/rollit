@@ -3,10 +3,10 @@ package org.insomnia.rollit.server;
 import java.util.Scanner;
 
 import org.insomnia.rollit.shared.network.Packet;
-import org.insomnia.rollit.shared.network.PacketConnect;
-import org.insomnia.rollit.shared.network.PacketRaw;
 import org.insomnia.rollit.shared.network.Server;
 import org.insomnia.rollit.shared.network.ServerHandler;
+import org.insomnia.rollit.shared.network.packets.PacketConnect;
+import org.insomnia.rollit.shared.network.packets.PacketRaw;
 
 public final class Main implements ServerHandler {
 	private final Server server;
