@@ -31,7 +31,7 @@ public abstract class NewManager {
 
 	private void registerHandler(Method method) {
 		PacketHandler handler = method.getAnnotation(PacketHandler.class);
-		PacketType packetType = handler.packetType();
+		PacketType packetType = handler.value();
 		Class<?> methodParameters[] = method.getParameterTypes();
 
 		if (methodParameters.length != 1) {
@@ -75,6 +75,6 @@ public abstract class NewManager {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
 	@interface PacketHandler {
-		PacketType packetType();
+		abstract PacketType value();
 	}
 }

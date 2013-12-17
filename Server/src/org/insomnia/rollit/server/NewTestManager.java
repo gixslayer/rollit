@@ -6,12 +6,12 @@ import org.insomnia.rollit.shared.network.packets.PacketRegister;
 
 public class NewTestManager extends NewManager {
 
-	@PacketHandler(packetType = PacketType.Register)
+	@PacketHandler(PacketType.Register)
 	public void testHandler(PacketRegister packet) {
 		System.out.println(packet.getName());
 	}
 
-	@PacketHandler(packetType = PacketType.Register)
+	@PacketHandler(PacketType.Register)
 	public void testHandler2(PacketRegister packet) {
 		System.out.println(packet.getName().toUpperCase());
 	}
