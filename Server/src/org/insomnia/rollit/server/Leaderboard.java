@@ -25,10 +25,10 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return getScoresAbove(scores, value);
 	}
 
-	public List<Score> getScoresAbove(List<Score> scores, T value) {
+	public List<Score> getScoresAbove(List<Score> argScores, T value) {
 		List<Score> result = new ArrayList<Score>();
 
-		for (Score score : scores) {
+		for (Score score : argScores) {
 			if (score.getScore().compareTo(value) > 0) {
 				result.add(score);
 			}
@@ -41,10 +41,10 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return getScoresBelow(scores, value);
 	}
 
-	public List<Score> getScoresBelow(List<Score> scores, T value) {
+	public List<Score> getScoresBelow(List<Score> argScores, T value) {
 		List<Score> result = new ArrayList<Score>();
 
-		for (Score score : scores) {
+		for (Score score : argScores) {
 			if (score.getScore().compareTo(value) < 0) {
 				result.add(score);
 			}
@@ -57,10 +57,10 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return getScoresAfter(scores, date);
 	}
 
-	public List<Score> getScoresAfter(List<Score> scores, Date date) {
+	public List<Score> getScoresAfter(List<Score> argScores, Date date) {
 		List<Score> result = new ArrayList<Score>();
 
-		for (Score score : scores) {
+		for (Score score : argScores) {
 			if (score.getDate().after(date)) {
 				result.add(score);
 			}
@@ -73,10 +73,10 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return getScoresBefore(scores, date);
 	}
 
-	public List<Score> getScoresBefore(List<Score> scores, Date date) {
+	public List<Score> getScoresBefore(List<Score> argScores, Date date) {
 		List<Score> result = new ArrayList<Score>();
 
-		for (Score score : scores) {
+		for (Score score : argScores) {
 			if (score.getDate().before(date)) {
 				result.add(score);
 			}
@@ -89,10 +89,10 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return getScoresBy(scores, player);
 	}
 
-	public List<Score> getScoresBy(List<Score> scores, String player) {
+	public List<Score> getScoresBy(List<Score> argScores, String player) {
 		List<Score> result = new ArrayList<Score>();
 
-		for (Score score : scores) {
+		for (Score score : argScores) {
 			if (score.getPlayer().equals(player)) {
 				result.add(score);
 			}
@@ -105,20 +105,20 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return getAverage(scores);
 	}
 
-	public double getAverage(List<Score> scores) throws OperationNotSupportedException {
-		if (scores.size() == 0 || !canBeAveraged(scores.get(0).getScore())) {
+	public double getAverage(List<Score> argScores) throws OperationNotSupportedException {
+		if (argScores.size() == 0 || !canBeAveraged(argScores.get(0).getScore())) {
 			throw new OperationNotSupportedException(
 					"Must have atleast one element of type Number to compure average");
 		}
 
 		double sum = 0;
 
-		for (Score score : scores) {
+		for (Score score : argScores) {
 			// TODO: Verify this works.
 			sum += double.class.cast(score);
 		}
 
-		return sum / scores.size();
+		return sum / argScores.size();
 	}
 
 	public List<Score> getScores() {
