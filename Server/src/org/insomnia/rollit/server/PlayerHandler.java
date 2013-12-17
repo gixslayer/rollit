@@ -3,23 +3,11 @@ package org.insomnia.rollit.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.insomnia.rollit.shared.network.packets.PacketConnect;
-
-public final class PlayerManager extends Manager {
+public final class PlayerHandler extends NetworkHandler {
 	private final Map<Integer, Player> players;
-	private final Manager.PacketHandler<PacketConnect> connectHandler =
-			new Manager.PacketHandler<PacketConnect>(PacketConnect.class) {
 
-				public void handlePacket(int clientId, PacketConnect packet) {
-					System.out.println(packet.getName());
-				}
-
-			};
-
-	public PlayerManager() {
+	public PlayerHandler() {
 		this.players = new HashMap<Integer, Player>();
-
-		this.registerPacketHandler(connectHandler);
 	}
 
 	public boolean registerPlayer(int clientId, String name) {

@@ -7,10 +7,10 @@ import java.util.Map;
 
 import org.insomnia.rollit.shared.network.Packet;
 
-public abstract class Manager {
+public abstract class OldManager {
 	private final Map<Class<? extends Packet>, List<PacketHandler<?>>> packetHandlers;
 
-	public Manager() {
+	public OldManager() {
 		this.packetHandlers = new HashMap<Class<? extends Packet>, List<PacketHandler<?>>>();
 	}
 

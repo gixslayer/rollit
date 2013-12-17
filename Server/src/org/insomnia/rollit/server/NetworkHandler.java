@@ -15,10 +15,10 @@ import org.insomnia.rollit.shared.network.Packet;
 import org.insomnia.rollit.shared.network.PacketFactory;
 import org.insomnia.rollit.shared.network.PacketType;
 
-public abstract class NewManager {
+public abstract class NetworkHandler {
 	private final Map<PacketType, List<Method>> packetHandlers;
 
-	public NewManager() {
+	public NetworkHandler() {
 		this.packetHandlers = new HashMap<PacketType, List<Method>>();
 
 		for (Method method : this.getClass().getDeclaredMethods()) {
@@ -34,17 +34,25 @@ public abstract class NewManager {
 		PacketType packetType = handler.value();
 		Class<?> methodParameters[] = method.getParameterTypes();
 
-		if (methodParameters.length != 1) {
-			throw new RuntimeException("Wrong argument count");
+		if (methodParameters.length != 2) {
+			throw new RuntimeException("Wrong argument count (expected 2 found "
+					+ methodParameters.length + ")");
 		}
 
-		Class<?> parameterType = methodParameters[0];
+		Class<?> parameterType1 = methodParameters[0];
+		Class<?> parameterType2 = methodParameters[1];
+
+		if (parameterType1 != int.class) {
+			throw new RuntimeException("Invalid argument type (expected " + int.class + " found "
+					+ parameterType1 + ")");
+		}
 
 		try {
 			Packet packet = PacketFactory.createPacket(packetType);
 
-			if (parameterType != packet.getClass()) {
-				throw new RuntimeException("Invalid argument type");
+			if (parameterType2 != packet.getClass()) {
+				throw new RuntimeException("Invalid argument type (expected " + packet.getClass()
+						+ " found " + parameterType2 + ")");
 			}
 
 			if (!packetHandlers.containsKey(packetType)) {
@@ -57,16 +65,17 @@ public abstract class NewManager {
 		}
 	}
 
-	public void PacketReceived(Packet packet) {
+	public void handlePacket(int clientId, Packet packet) {
 		PacketType packetType = packet.getType();
 
 		if (packetHandlers.containsKey(packetType)) {
 			for (Method method : packetHandlers.get(packetType)) {
 				try {
-					method.invoke(this, packet);
+					method.invoke(this, clientId, packet);
 				} catch (IllegalAccessException | IllegalArgumentException
 						| InvocationTargetException e) {
-					throw new RuntimeException("Could not invoke handler: " + e.getMessage());
+					throw new RuntimeException("Could not invoke handler " + method + ": "
+							+ e.getMessage());
 				}
 			}
 		}

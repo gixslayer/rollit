@@ -11,14 +11,14 @@ import org.insomnia.rollit.shared.network.packets.PacketRaw;
 public final class Main implements ServerHandler {
 	private final Server server;
 	private final Scanner scanner;
-	private final RoomManager roomManager;
-	private final PlayerManager playerManager;
+	private final RoomHandler roomManager;
+	private final PlayerHandler playerManager;
 
 	public Main() {
 		this.server = new Server(this);
 		this.scanner = new Scanner(System.in);
-		this.roomManager = new RoomManager();
-		this.playerManager = new PlayerManager();
+		this.roomManager = new RoomHandler();
+		this.playerManager = new PlayerHandler();
 	}
 
 	public void startListening() {
