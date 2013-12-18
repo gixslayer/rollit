@@ -179,4 +179,8 @@ public final class Server implements Runnable, Closeable {
 			client.disconnect();
 		}
 	}
+
+	public boolean isListening() {
+		return keepListening;
+	}
 }
