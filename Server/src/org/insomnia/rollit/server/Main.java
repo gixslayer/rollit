@@ -1,117 +1,164 @@
 package org.insomnia.rollit.server;
 
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
+import org.insomnia.rollit.shared.LogLevel;
+import org.insomnia.rollit.shared.Logger;
 import org.insomnia.rollit.shared.network.Packet;
 import org.insomnia.rollit.shared.network.Server;
 import org.insomnia.rollit.shared.network.ServerHandler;
-import org.insomnia.rollit.shared.network.packets.PacketConnect;
-import org.insomnia.rollit.shared.network.packets.PacketRaw;
 
 public final class Main implements ServerHandler {
-	private final Server server;
-	private final Scanner scanner;
-	private final RoomHandler roomManager;
-	private final PlayerHandler playerManager;
+	public static final Scanner SCANNER = new Scanner(System.in);
 
-	public Main() {
+	private static final int MIN_PORT = 0;
+	private static final int MAX_PORT = 65536;
+
+	private static Main instance = null;
+
+	public static Main getInstance() {
+		if (instance == null) {
+			instance = new Main();
+		}
+
+		return instance;
+	}
+
+	public static Server getServerInstance() {
+		return getInstance().getServer();
+	}
+
+	private final Server server;
+	private final Set<NetworkHandler> networkHandlers;
+	private final RoomHandler roomHandler;
+	private final PlayerHandler playerHandler;
+
+	private Main() {
 		this.server = new Server(this);
-		this.scanner = new Scanner(System.in);
-		this.roomManager = new RoomHandler();
-		this.playerManager = new PlayerHandler();
+		this.networkHandlers = new HashSet<NetworkHandler>();
+		this.roomHandler = new RoomHandler();
+		this.playerHandler = new PlayerHandler();
+
+		attachNetworkHandler(roomHandler);
+		attachNetworkHandler(playerHandler);
+
+		Logger.attachStream(System.out);
+		Logger.setLogLevel(LogLevel.Low);
+	}
+
+	public void attachNetworkHandler(NetworkHandler handler) {
+		networkHandlers.add(handler);
+	}
+
+	public void detachNetworkHandler(NetworkHandler handler) {
+		networkHandlers.remove(handler);
 	}
 
 	public void startListening() {
-		System.out.print("Please enter a port to start listening on: ");
+		// Scanner scanner = new Scanner(System.in);
 
-		String line = scanner.nextLine();
+		while (!server.isListening()) {
+			System.out.print("Please enter a port to start listening on: ");
 
-		try {
-			int port = Integer.valueOf(line).intValue();
+			String line = SCANNER.nextLine();
 
-			if (port >= 0 && port < 65536) {
-				server.startListening(port);
-			} else {
-				// Split up println to get better formatting (prevents ugly line wrapping).
-				String message = "Invalid port number " + port + " (must be between 0 and 65536)";
+			try {
+				int port = Integer.parseInt(line);
 
-				System.out.println(message);
-
-				startListening();
+				if (port >= MIN_PORT && port < MAX_PORT) {
+					server.startListening(port);
+				} else {
+					System.err.println("Invalid port number " + port + " (must be between "
+							+ MIN_PORT + " and " + MAX_PORT + ")");
+				}
+			} catch (NumberFormatException e) {
+				System.err.println("Could not parse input as integer");
 			}
-		} catch (NumberFormatException e) {
-			System.out.println("Could not parse input as integer");
-
-			startListening();
 		}
+
+		// Closing the scanner here will also close System.in which will cause issues in the entry
+		// point. Using a constant instance of Scanner now that will last during the entire
+		// application lifetime and therefore will not close System.in.
+		// scanner.close();
+	}
+
+	public void stopListening() {
+		server.close();
+	}
+
+	public Server getServer() {
+		return server;
 	}
 
 	// ////// IServerHandler callbacks
 	public void listening(int port) {
-		System.out.println("Server started listening on port " + port);
+		Logger.println(LogLevel.Low, "Server started listening on port " + port);
 	}
 
 	public void listenFailed(int port) {
-		System.out.println("Failed to start listening on port " + port);
-
-		startListening();
+		Logger.println(LogLevel.Low, "Failed to start listening on port " + port);
 	}
 
 	public void stopped(String reason) {
-		System.out.println("Server stopped listening: " + reason);
+		Logger.println(LogLevel.Low, "Server stopped listening: " + reason);
 	}
 
 	public void clientConnected(int clientId) {
-		System.out.println("Client connected (clientId=" + clientId + ")");
+		Logger.println(LogLevel.Medium, "Client connected (clientId=" + clientId + ")");
 	}
 
 	public void clientRefused(String reason) {
-		System.out.println("Client refused: " + reason);
+		Logger.println(LogLevel.Low, "Client refused: " + reason);
 	}
 
 	public void clientDisconnected(int clientId) {
-		System.out.println("Client disconnected (clientId=" + clientId + ")");
+		Logger.println(LogLevel.Medium, "Client disconnected (clientId=" + clientId + ")");
 	}
 
 	public void packetReceived(int clientId, Packet packet) {
-		playerManager.handlePacket(clientId, packet);
-		roomManager.handlePacket(clientId, packet);
+		Logger.println(LogLevel.High, "Received packet " + packet.getType() + " from client "
+				+ clientId);
+
+		for (NetworkHandler handler : networkHandlers) {
+			handler.handlePacket(clientId, packet);
+		}
 	}
 
 	public void packetDropped(int clientId, String reason) {
-		System.out.println("Dropped packet for client " + clientId + " (" + reason + ")");
-
+		Logger.println(LogLevel.Low, "Dropped packet for client " + clientId + " (" + reason + ")");
 	}
 
 	public void packetSend(int clientId, Packet packet) {
-		// TODO Auto-generated method stub
-
+		Logger.println(LogLevel.High, "Send packet " + packet.getType() + " to client " + clientId);
 	}
 
 	public void packetSendFailed(int clientId, Packet packet, String reason) {
-		System.out.println("Failed to send packet to client " + clientId + " (" + reason + ")");
-
-	}
-
-	public void dataReceived(int clientId, int bytes) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void dataSend(int clientId, int bytes) {
-		// TODO Auto-generated method stub
-
+		Logger.println(LogLevel.Low, "Failed to send packet to client " + clientId + " (" + reason
+				+ ")");
 	}
 
 	// ////// Entry point
 	public static void main(String[] args) {
-		// new Main().startListening();
+		Main main = Main.getInstance();
 
-		Main m = new Main();
+		// Start the server.
+		main.startListening();
 
-		m.packetReceived(0, new PacketConnect("test"));
-		m.packetReceived(0, new PacketRaw());
-		m.packetReceived(0, new PacketRaw());
-		m.packetReceived(0, new PacketConnect("testw"));
+		// Print a message and wait for user input.
+		System.out.println("Press ENTER to exit");
+
+		try {
+			System.in.read();
+		} catch (IOException e) {
+			// Simply ignore as there is no sensible thing to do. Useless statement added to satisfy
+			// Checkstyle.
+			e.equals(null);
+		}
+
+		// Force the server to shutdown.
+		main.stopListening();
 	}
 }
