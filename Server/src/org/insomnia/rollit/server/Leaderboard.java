@@ -106,16 +106,39 @@ public final class Leaderboard<T extends Comparable<T>> {
 	}
 
 	public double getAverage(List<Score> scores) throws OperationNotSupportedException {
-		if (scores.size() == 0 || !canBeAveraged(scores.get(0).getScore())) {
+		if (scores.size() == 0) {
 			throw new OperationNotSupportedException(
-					"Must have atleast one element of type Number to compure average");
+					"Must have atleast one element to compure average");
+		}
+
+		Class<?> scoreClass = scores.get(0).getScore().getClass();
+
+		if (!Number.class.isAssignableFrom(scoreClass)) {
+			throw new OperationNotSupportedException("Score type must be assignable to a Double");
 		}
 
 		double sum = 0;
 
 		for (Score score : scores) {
-			// TODO: Verify this works.
-			sum += double.class.cast(score);
+			double valueToAdd = 0;
+
+			T scoreValue = score.getScore();
+
+			if (scoreValue instanceof Integer) {
+				valueToAdd += (Integer) scoreValue;
+			} else if (scoreValue instanceof Short) {
+				valueToAdd += (Short) scoreValue;
+			} else if (scoreValue instanceof Byte) {
+				valueToAdd += (Byte) scoreValue;
+			} else if (scoreValue instanceof Long) {
+				valueToAdd += (Long) scoreValue;
+			} else if (scoreValue instanceof Float) {
+				valueToAdd += (Float) scoreValue;
+			} else if (scoreValue instanceof Double) {
+				valueToAdd += (Double) scoreValue;
+			}
+
+			sum += valueToAdd;
 		}
 
 		return sum / scores.size();
@@ -125,9 +148,132 @@ public final class Leaderboard<T extends Comparable<T>> {
 		return scores;
 	}
 
-	private boolean canBeAveraged(T value) {
-		return value instanceof Integer || value instanceof Short || value instanceof Double
-				|| value instanceof Float || value instanceof Long || value instanceof Byte;
+	public List<Score> sortIncremental() {
+		return sortIncremental(scores);
+	}
+
+	public List<Score> sortIncremental(List<Score> scores) {
+		int lastSwap = scores.size() - 1;
+
+		while (lastSwap != 0) {
+			int currentLastSwap = 0;
+
+			for (int i = 0; i < lastSwap; i++) {
+				Score a = scores.get(i);
+				Score b = scores.get(i + 1);
+
+				if (a.getScore().compareTo(b.getScore()) > 0) {
+					scores.set(i, b);
+					scores.set(i + 1, a);
+
+					currentLastSwap = i;
+				}
+			}
+
+			lastSwap = currentLastSwap;
+		}
+
+		List<Score> result = new ArrayList<Score>();
+
+		result.addAll(scores);
+
+		return result;
+	}
+
+	public List<Score> sortDecremental() {
+		return sortDecremental(scores);
+	}
+
+	public List<Score> sortDecremental(List<Score> scores) {
+		int lastSwap = scores.size() - 1;
+
+		while (lastSwap != 0) {
+			int currentLastSwap = 0;
+
+			for (int i = 0; i < lastSwap; i++) {
+				Score a = scores.get(i);
+				Score b = scores.get(i + 1);
+
+				if (a.getScore().compareTo(b.getScore()) < 0) {
+					scores.set(i, b);
+					scores.set(i + 1, a);
+
+					currentLastSwap = i;
+				}
+			}
+
+			lastSwap = currentLastSwap;
+		}
+
+		List<Score> result = new ArrayList<Score>();
+
+		result.addAll(scores);
+
+		return result;
+	}
+
+	public List<Score> sortDateIncremental() {
+		return sortDateIncremental(scores);
+	}
+
+	public List<Score> sortDateIncremental(List<Score> scores) {
+		int lastSwap = scores.size() - 1;
+
+		while (lastSwap != 0) {
+			int currentLastSwap = 0;
+
+			for (int i = 0; i < lastSwap; i++) {
+				Score a = scores.get(i);
+				Score b = scores.get(i + 1);
+
+				if (a.getDate().compareTo(b.getDate()) > 0) {
+					scores.set(i, b);
+					scores.set(i + 1, a);
+
+					currentLastSwap = i;
+				}
+			}
+
+			lastSwap = currentLastSwap;
+		}
+
+		List<Score> result = new ArrayList<Score>();
+
+		result.addAll(scores);
+
+		return result;
+	}
+
+	public List<Score> sortDateDecremental() {
+		return sortDateDecremental(scores);
+	}
+
+	public List<Score> sortDateDecremental(List<Score> scores) {
+		int lastSwap = scores.size() - 1;
+
+		while (lastSwap != 0) {
+			int currentLastSwap = 0;
+
+			for (int i = 0; i < lastSwap; i++) {
+				Score a = scores.get(i);
+				Score b = scores.get(i + 1);
+
+				if (a.getDate().compareTo(b.getDate()) < 0) {
+					scores.set(i, b);
+					scores.set(i + 1, a);
+
+					currentLastSwap = i;
+				}
+			}
+
+			lastSwap = currentLastSwap;
+		}
+
+		List<Score> result = new ArrayList<Score>();
+
+		result.addAll(scores);
+
+		return result;
 	}
 
 	public final class Score {
