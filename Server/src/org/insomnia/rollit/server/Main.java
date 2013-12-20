@@ -116,6 +116,8 @@ public final class Main implements ServerHandler {
 
 	public void clientDisconnected(int clientId) {
 		Logger.println(LogLevel.Medium, "Client disconnected (clientId=" + clientId + ")");
+
+		playerHandler.unregisterPlayer(clientId);
 	}
 
 	public void packetReceived(int clientId, Packet packet) {

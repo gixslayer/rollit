@@ -30,4 +30,27 @@ public abstract class Room {
 	public int getMaxPlayers() {
 		return maxPlayers;
 	}
+
+	public boolean addPlayer(Player player) {
+		boolean result = false;
+
+		if (hasSpace() && !hasPlayer(player)) {
+			player.setCurrentRoom(this);
+			players.put(player.getClientId(), player);
+
+			result = true;
+		}
+
+		return result;
+	}
+
+	public void removePlayer(Player player) {
+		players.remove(player.getClientId());
+
+		player.setCurrentRoom(null);
+	}
+
+	public boolean hasPlayer(Player player) {
+		return players.containsKey(player.getClientId());
+	}
 }
