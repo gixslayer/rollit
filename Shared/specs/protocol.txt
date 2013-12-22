@@ -1,0 +1,194 @@
+Client -> Rollit player/bot
+Server -> Hosts games
+MasterServer -> Validate client credentials
+
+[Register]
+Type: 			0
+Path: 			Client -> MasterServer
+Description: 	Attempts to register client credentials to the master server.
+Data:
+	String name		(The username of the client)
+	String password	(The password of the client)
+
+[Authenticate]
+Type:			1
+Path:			Server -> MasterServer / Client -> MasterServer
+Description:	Attempts to authenticate client credentials at the master server.
+Data:
+	String name		(The username of the client)
+	String password	(The password of the client)
+
+[MasterServerResponse]
+Type:			2
+Path:			MasterServer -> Client / MasterServer -> Server
+Description: 	Contains the response to a query.
+Data:
+	int response	(The integer value that indicates the result. Value can be one of the constants defined)
+Constants:
+	SUCCESS = 0 			(Indicates a successful query)
+	INVALID_CREDENTIALS = 1 (Authentication failed, invalid credentials)
+	NAME_TAKEN = 2 			(Registration failed, name already registered)
+	NAME_INVALID = 3		(Registration failed, name did not meet requirements)
+	PASS_INVALID = 4		(Registration failed, password did not meet requirements)
+	
+[Connect]
+Type:			3
+Path:			Client -> Server
+Description:	Send when a client first connects to a server.
+Data:
+	String name				(The username of the client)
+	String password			(The password of the client)
+	byte[] supportedTypes	(An array of packet types this client supports)
+
+[ConnectResponse]
+Type:			4
+Path:			Server -> Client
+Description:	Signals a client whether the server accepts the connection or not.
+Data:
+	int response			(The integer value that indicates the result. Value can be one of the constants defined)
+	byte[] supportedTypes	(An array of packet types that both the server and client support, never written if the response isn't SUCCESS)
+Constants:
+	SUCCESS = 0			(Client accepted)	
+	AUTH_FAILED = 1		(Authentication failed, invalid credentials or master server is down) 
+	BAD_PROTOCOL = 2	(Server required certain packet types that client did not support)
+	
+[JoinRoom]
+Type:			5
+Path:			Client -> Server
+Description:	Send when a client requests to enter a room.
+Data:
+	int roomId	(The unique identifier of the room)
+Constants:
+	ROOM_ID_LOBBY = 0	(The reserved identifier for the lobby room)
+	
+[JoinRoomResponse]
+Type:			6
+Path:			Server -> Client
+Description:	Signals a client whether the server accepted the request to enter a room.
+Data:
+	int response	(The integer value that indicates the result. Value can be one of the constants defined)
+Constants:
+	SUCCESS = 0			(Join allowed)
+	ROOM_FULL = 1		(Join denied, room is full)
+	ROOM_STARTED = 2	(Join denied, game already started)
+	INVALID_ID			(Room does not exist)
+	
+[PickColor]
+Type:			7
+Path:			Client -> Server
+Description:	Send when a client attempts to pick a color
+Data:
+	byte color	(The color to pick) >>> Should match the enum Ball backing values
+	
+[PickColorResponse]
+Type:			8
+Path:			Server -> Client
+Description:	Signals a client whether the picked color has been assigned.
+Data:
+	int response	(The integer value that indicates the result. Value can be one of the constants defined)
+	byte color		(The color that was assigned to the client) >>> Should match the enum Ball backing values
+Constants:
+	SUCCESS			(Pick succeeded, color 'color' in the data was assigned to the client)
+	INVALID_COLOR	(Pick failed, color byte was not valid)
+	COLOR_TAKEN		(Pick failed, color was already taken)
+	
+[ChangeReadyStatus]
+Type:			9
+Path:			Client -> Server
+Description:	Send when a client changes ready status in a game room.
+Data:
+	boolean status	(The new status of the client)
+	
+[Move]
+Type:			10
+Path:			Client -> Server
+Description:	Send when a client wants to make a move
+Data:
+	int x	(The horizontal index of the socket)
+	int y	(The vertical index of the socket)
+
+[MoveResponse]
+Type:			11
+Path:			Server -> Client
+Description:	Signals a client whether the suggested move was executed.
+Data:
+	int response	(The integer value that indicates the result. Value must be one of the constants defined)
+Constants:
+	SUCCESS = 0			(Move performed)
+	INVALID_MOVE = 1	(Move failed, not a legal move)
+	NO_TURN = 2			(Move failed, wasn't clients turn)
+
+[SyncGameState]
+Type:			12
+Path:			Server -> Client
+Description:	Synchronizes the game state to the servers current state
+Data:
+	String currentTurn	(Name of the client who has to perform the next move)
+	byte[64] gameState	(The state of the game board) >>> Values match the enum Ball backing values
+	int playerCount		(The number of players in the room)
+	[foreach player]
+		String name		(The name of the client)
+		byte color		(The color of the client, can be 0 (Ball.None) to indicate no color has been picked)
+		boolean status	(The ready status of the client)
+
+[GameOutcome]
+Type:			13
+Path:			Server -> Client
+Description:	Send once the game has finished, shows the game results
+Data:
+	int endReason		(The reason why the game ended. If this isn't SUCCESS the following data isn't added as it isn't relevant)
+	int playerCount		(The number of players in the room)
+	[foreach player]
+		String name		(The name of the client)
+		int balls		(The total amount of balls the client has on the board at the end of the game)
+		int position	(The position the client ended such as first, second etc...)
+Constants:
+	SUCCESS = 0			(Game ended normally)
+	CLIENT_DROPPED = 1	(One or several clients dropped before the end of the game)
+
+[GetRooms]
+Type:			14
+Path:			Client -> Server
+Description:	Client asks for a list of rooms available.
+
+[GetRoomsResponse]
+Type:			15
+Path:			Server -> Client
+Description:	Sends the client a list of available room and the information about each room.
+Data:
+	int rooms			(The amount of available rooms)
+	[foreach room]
+		int id			(The id of the room)
+		String name		(The name of the room)
+		int maxPlayers	(The maximum amount of clients in the room)
+		int players		(The amount of clients that are currently in the room)
+		[foreach player]
+			String name	(The name of the client) 
+
+[CreateRoom]
+Type:			16
+Path:			Client -> Server
+Description:	Client asks for a new room to be created. If created successfully the client will be placed in the room instantly.
+Data:
+	int maxPlayers	(The maximum amount of players allowed in the room which has to be 2, 3 or 4)
+
+[CreateRoomResponse]
+Type:			17
+Path:			Server -> Client
+Description:	Signals a client whether the creation of the room succeeded.
+Data:
+	int response	(The integer value that indicates the result. Value must be one of the constants defined)
+Constants:
+	SUCCESS = 0					(Room created)
+	BAD_MAX_PLAYER_COUNT = 1	(Failed, max player count was invalid)
+	DENIED = 2					(Failed, server denied for no specific reason)
+	
+[Chat]
+Type:			18
+Path:			Server -> Client / Client -> Server
+Description:	Send to the server when a client sends a chat message or send to all clients when the server receives a chat message.
+Data:
+	String name	(The name of the client that send the message, ignored when the server receives a chat message as the name is resolved from the client id to make sure the correct name is displayed)
+	String text	(The text of the chat message)
+	
+// TODO: Leaderboard stuff
