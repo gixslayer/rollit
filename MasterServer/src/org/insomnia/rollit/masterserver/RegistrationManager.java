@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.insomnia.rollit.shared.network.PacketRegister;
+import org.insomnia.rollit.shared.network.packets.PacketRegister;
 
 public final class RegistrationManager {
 	private final Map<String, byte[]> registrations;

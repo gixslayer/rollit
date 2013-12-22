@@ -6,9 +6,9 @@ import org.insomnia.rollit.shared.network.MasterServer;
 import org.insomnia.rollit.shared.network.MasterServerClient;
 import org.insomnia.rollit.shared.network.MasterServerHandler;
 import org.insomnia.rollit.shared.network.Packet;
-import org.insomnia.rollit.shared.network.PacketMasterServerResponse;
-import org.insomnia.rollit.shared.network.PacketRegister;
-import org.insomnia.rollit.shared.network.PacketValidateRegistration;
+import org.insomnia.rollit.shared.network.packets.PacketMasterServerResponse;
+import org.insomnia.rollit.shared.network.packets.PacketRegister;
+import org.insomnia.rollit.shared.network.packets.PacketValidateRegistration;
 
 public class Main implements MasterServerHandler {
 	public static final int SERVER_PORT = 6969;
