@@ -28,7 +28,9 @@ public final class MasterServerQuery implements ClientHandler {
 
 		if (shouldLock) {
 			try {
-				lock.wait(DEFAULT_TIMEOUT);
+				synchronized (lock) {
+					lock.wait(DEFAULT_TIMEOUT);
+				}
 			} catch (InterruptedException e) {
 				e.equals(null);
 			}
@@ -40,7 +42,9 @@ public final class MasterServerQuery implements ClientHandler {
 	}
 
 	public void packetDropped(String reason) {
-		lock.notify();
+		synchronized (lock) {
+			lock.notify();
+		}
 	}
 
 	public void connected(String host, int port) {
@@ -52,7 +56,9 @@ public final class MasterServerQuery implements ClientHandler {
 	}
 
 	public void disconnected(String reason) {
-		lock.notify();
+		synchronized (lock) {
+			lock.notify();
+		}
 	}
 
 	public void packetReceived(Packet packet) {
@@ -64,7 +70,9 @@ public final class MasterServerQuery implements ClientHandler {
 			}
 		}
 
-		lock.notify();
+		synchronized (lock) {
+			lock.notify();
+		}
 	}
 
 	public void packetSend(Packet packet) {

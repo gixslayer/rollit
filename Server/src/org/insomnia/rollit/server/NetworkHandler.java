@@ -4,7 +4,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -24,14 +26,15 @@ import org.insomnia.rollit.shared.network.PacketType;
  * 
  */
 public abstract class NetworkHandler {
-	private final Map<PacketType, List<Method>> packetHandlers;
+	// Switched from the reflective Method to the new MethodHandle for faster invocation.
+	private final Map<PacketType, List<MethodHandle>> packetHandlers;
 
 	/**
 	 * Validates and registers all packet handlers. If a packet handler failed to validate a
 	 * <code>RuntimeException</code> is thrown.
 	 */
 	public NetworkHandler() {
-		this.packetHandlers = new HashMap<PacketType, List<Method>>();
+		this.packetHandlers = new HashMap<PacketType, List<MethodHandle>>();
 
 		for (Method method : this.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(PacketHandler.class)) {
@@ -143,11 +146,19 @@ public abstract class NetworkHandler {
 	 */
 	private void registerHandler(PacketType packetType, Method method) {
 		if (!packetHandlers.containsKey(packetType)) {
-			packetHandlers.put(packetType, new ArrayList<Method>());
+			packetHandlers.put(packetType, new ArrayList<MethodHandle>());
 		}
 
-		packetHandlers.get(packetType).add(method);
+		Lookup lookup = MethodHandles.lookup();
 
+		try {
+			MethodHandle handle = lookup.unreflect(method);
+
+			packetHandlers.get(packetType).add(handle);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException("Failed to get method handle for handler " + method + ": "
+					+ e.getMessage());
+		}
 	}
 
 	/**
@@ -161,13 +172,12 @@ public abstract class NetworkHandler {
 		PacketType packetType = packet.getType();
 
 		if (packetHandlers.containsKey(packetType)) {
-			for (Method method : packetHandlers.get(packetType)) {
+			for (MethodHandle methodHandle : packetHandlers.get(packetType)) {
 				try {
-					method.invoke(this, clientId, packet);
-				} catch (IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException e) {
-					throw new RuntimeException("Could not invoke handler " + method + ": "
-							+ e.getMessage());
+					methodHandle.invoke(this, clientId, packet);
+				} catch (Throwable e) {
+					throw new RuntimeException("Exception while invoking handler " + methodHandle
+							+ ": " + e.getMessage());
 				}
 			}
 		}
@@ -178,7 +188,9 @@ public abstract class NetworkHandler {
 	 * must be public and cannot be static or abstract. A method also has to have exactly 2
 	 * arguments. The first argument must be of type <code>int</code> while the second argument has
 	 * to match the type of the specified <code>PacketType</code>. If the above conditions are not
-	 * met a <code>RuntimeException</code> will be thrown when the method is validated.
+	 * met a <code>RuntimeException</code> will be thrown when the method is validated. Any
+	 * exception thrown during the execution of the handler are not handled and will result in a
+	 * <code>RuntimeException</code>.
 	 * 
 	 * @author Ciske
 	 * 
