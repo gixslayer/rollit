@@ -6,6 +6,11 @@ import java.util.concurrent.ConcurrentMap;
 import org.insomnia.rollit.shared.network.PacketType;
 import org.insomnia.rollit.shared.network.packets.PacketRegister;
 
+/**
+ * Handles all player connections and registrations.
+ * @author ciske
+ * 
+ */
 public final class PlayerHandler extends NetworkHandler {
 	private final ConcurrentMap<Integer, Player> players;
 
@@ -39,6 +44,11 @@ public final class PlayerHandler extends NetworkHandler {
 		return players.get(clientId);
 	}
 
+	/**
+	 * Attempts to run a master server query to verify client credentials.
+	 * @author ciske
+	 * 
+	 */
 	private final class QueryWorker implements Runnable {
 		private final PlayerHandler handler;
 		private final PacketRegister packet;

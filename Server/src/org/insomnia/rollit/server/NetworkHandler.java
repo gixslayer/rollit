@@ -184,6 +184,18 @@ public abstract class NetworkHandler {
 	}
 
 	/**
+	 * Indicates whether the given packet from a specific client should be send to any registered
+	 * handlers.
+	 * @param clientId The client who send the packet.
+	 * @param packet The packet instance that was deserialized.
+	 * @return <code>true</code> to pass the packet onto all registered packet handlers.
+	 * <code>false</code> to ignore this packet.
+	 */
+	public boolean shouldHandlePacket(int clientId, Packet packet) {
+		return true;
+	}
+
+	/**
 	 * An annotation used to indicate a method has to handle packets of a specific type. A method
 	 * must be public and cannot be static or abstract. A method also has to have exactly 2
 	 * arguments. The first argument must be of type <code>int</code> while the second argument has

@@ -56,6 +56,8 @@ final class PacketBuffer {
 	}
 
 	private void beginPacket(byte[] data, int offset, int length) {
+		// Perhaps enforce a maximum packet size as currently malicious clients can force massive
+		// amounts of memory allocation on the server by sending insanely large packet sizes.
 		if (length >= Packet.PACKET_LENGTH_SIZE) {
 			bytesToReceive = PacketUtils.toInt(data, offset);
 

@@ -7,11 +7,13 @@ import java.util.Map;
 public abstract class Room {
 	private final Map<Integer, Player> players;
 	private final String name;
+	private final int roomId;
 	private final int maxPlayers;
 
-	public Room(String argName, int argMaxPlayers) {
+	public Room(String argName, int argRoomId, int argMaxPlayers) {
 		this.players = new HashMap<Integer, Player>();
 		this.name = argName;
+		this.roomId = argRoomId;
 		this.maxPlayers = argMaxPlayers;
 	}
 
@@ -21,6 +23,10 @@ public abstract class Room {
 
 	public String getName() {
 		return name;
+	}
+
+	public int getRoomId() {
+		return roomId;
 	}
 
 	public Collection<Player> getPlayers() {
