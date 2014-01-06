@@ -19,7 +19,7 @@ public final class Main implements ServerHandler {
 
 	private static Main instance = null;
 
-	public static Main getInstance() {
+	public static synchronized Main getInstance() {
 		if (instance == null) {
 			instance = new Main();
 		}
@@ -27,34 +27,37 @@ public final class Main implements ServerHandler {
 		return instance;
 	}
 
-	public static Server getServerInstance() {
-		return getInstance().getServer();
-	}
-
 	private final Server server;
 	private final Set<NetworkHandler> networkHandlers;
-	private final RoomHandler roomHandler;
-	private final PlayerHandler playerHandler;
+	private RoomHandler roomHandler;
+	private PlayerHandler playerHandler;
 
 	private Main() {
 		this.server = new Server(this);
 		this.networkHandlers = new HashSet<NetworkHandler>();
-		this.roomHandler = new RoomHandler();
-		this.playerHandler = new PlayerHandler();
-
-		attachNetworkHandler(roomHandler);
-		attachNetworkHandler(playerHandler);
 
 		Logger.attachStream(System.out);
 		Logger.setLogLevel(LogLevel.Low);
 	}
 
-	public void attachNetworkHandler(NetworkHandler handler) {
+	public synchronized <T extends NetworkHandler> T attachNetworkHandler(T handler) {
 		networkHandlers.add(handler);
+
+		return handler;
 	}
 
-	public void detachNetworkHandler(NetworkHandler handler) {
+	public synchronized void detachNetworkHandler(NetworkHandler handler) {
 		networkHandlers.remove(handler);
+	}
+
+	public void initializeHandlers() {
+		// The reason this is split up and not executed directly in the constructor is because the
+		// static Main instance is not set until the constructor exits. The problem is that the
+		// NetworkHandler constructor calls Main.getInstance() which will invoke the Main
+		// constructor again causing an infinite loop which results into a stack overflow.
+		// This method should always be called after the static Main instance is assigned.
+		this.roomHandler = attachNetworkHandler(new RoomHandler());
+		this.playerHandler = attachNetworkHandler(new PlayerHandler());
 	}
 
 	public void startListening() {
@@ -93,7 +96,15 @@ public final class Main implements ServerHandler {
 		return server;
 	}
 
-	// ////// IServerHandler callbacks
+	public PlayerHandler getPlayerHandler() {
+		return playerHandler;
+	}
+
+	public RoomHandler getRoomHandler() {
+		return roomHandler;
+	}
+
+	// ////// ServerHandler callbacks
 	public void listening(int port) {
 		Logger.println(LogLevel.Low, "Server started listening on port " + port);
 	}
@@ -111,7 +122,7 @@ public final class Main implements ServerHandler {
 	}
 
 	public void clientRefused(String reason) {
-		Logger.println(LogLevel.Low, "Client refused: " + reason);
+		Logger.println(LogLevel.Medium, "Client refused: " + reason);
 	}
 
 	public void clientDisconnected(int clientId) {
@@ -144,7 +155,11 @@ public final class Main implements ServerHandler {
 
 	// ////// Entry point
 	public static void main(String[] args) {
+		// Get the instance of Main (should not exist at this point so it should be created now).
 		Main main = Main.getInstance();
+
+		// Create and attach the network handlers.
+		main.initializeHandlers();
 
 		// Start the server.
 		main.startListening();
@@ -155,9 +170,7 @@ public final class Main implements ServerHandler {
 		try {
 			System.in.read();
 		} catch (IOException e) {
-			// Simply ignore as there is no sensible thing to do. Useless statement added to satisfy
-			// Checkstyle.
-			e.equals(null);
+			System.err.println("IOException during System.in.read() -> " + e.getMessage());
 		}
 
 		// Force the server to shutdown.

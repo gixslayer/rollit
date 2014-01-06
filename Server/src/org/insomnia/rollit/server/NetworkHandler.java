@@ -17,6 +17,9 @@ import java.util.Map;
 import org.insomnia.rollit.shared.network.Packet;
 import org.insomnia.rollit.shared.network.PacketFactory;
 import org.insomnia.rollit.shared.network.PacketType;
+import org.insomnia.rollit.shared.network.Server;
+
+// TODO: Switch to APT to perform compile verification instead of runtime verification?
 
 /**
  * Provides an abstract base for components that have to handle incoming packets. Handlers for
@@ -28,6 +31,11 @@ import org.insomnia.rollit.shared.network.PacketType;
 public abstract class NetworkHandler {
 	// Switched from the reflective Method to the new MethodHandle for faster invocation.
 	private final Map<PacketType, List<MethodHandle>> packetHandlers;
+	// Expose Main and Server instance to child classes as they most likely have a lot of
+	// interaction with them. Even though Singleton patterns can be used to get their instances it
+	// would really bloat the code.
+	protected final Main main;
+	protected final Server server;
 
 	/**
 	 * Validates and registers all packet handlers. If a packet handler failed to validate a
@@ -35,6 +43,10 @@ public abstract class NetworkHandler {
 	 */
 	public NetworkHandler() {
 		this.packetHandlers = new HashMap<PacketType, List<MethodHandle>>();
+		// When an instance is created an instance of Main should already exist as it is created at
+		// the entry point.
+		this.main = Main.getInstance();
+		this.server = Main.getInstance().getServer();
 
 		for (Method method : this.getClass().getDeclaredMethods()) {
 			if (method.isAnnotationPresent(PacketHandler.class)) {

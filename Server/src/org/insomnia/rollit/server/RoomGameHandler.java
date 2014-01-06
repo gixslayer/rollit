@@ -6,5 +6,13 @@ package org.insomnia.rollit.server;
  * 
  */
 public class RoomGameHandler extends NetworkHandler {
+	private RoomGame room;
 
+	public void setRoom(RoomGame argRoom) {
+		this.room = argRoom;
+	}
+
+	private void destroyRoom() {
+		main.getRoomHandler().destroyGameRoom(room.getRoomId());
+	}
 }

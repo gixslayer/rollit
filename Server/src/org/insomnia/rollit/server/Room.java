@@ -9,12 +9,14 @@ public abstract class Room {
 	private final String name;
 	private final int roomId;
 	private final int maxPlayers;
+	private final NetworkHandler handler;
 
-	public Room(String argName, int argRoomId, int argMaxPlayers) {
+	public Room(String argName, int argRoomId, int argMaxPlayers, NetworkHandler argHandler) {
 		this.players = new HashMap<Integer, Player>();
 		this.name = argName;
 		this.roomId = argRoomId;
 		this.maxPlayers = argMaxPlayers;
+		this.handler = argHandler;
 	}
 
 	public boolean hasSpace() {
@@ -35,6 +37,10 @@ public abstract class Room {
 
 	public int getMaxPlayers() {
 		return maxPlayers;
+	}
+
+	public NetworkHandler getHandler() {
+		return handler;
 	}
 
 	public boolean addPlayer(Player player) {

@@ -37,4 +37,14 @@ public final class Player {
 
 		return result;
 	}
+
+	public void moveToLobby() {
+		RoomLobby lobby = Main.getInstance().getRoomHandler().getLobby();
+
+		if (!lobby.hasPlayer(this)) {
+			// TODO: Verify that joining the lobby should never fail.
+			lobby.addPlayer(this);
+			setCurrentRoom(lobby);
+		}
+	}
 }

@@ -1,9 +1,7 @@
 package org.insomnia.rollit.server;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Controls the switching/creation and lifetime of rooms.
@@ -17,6 +15,9 @@ public final class RoomHandler extends NetworkHandler {
 	public RoomHandler() {
 		this.lobby = new RoomLobby();
 		this.gameRooms = new HashMap<Integer, RoomGame>();
+
+		// Attach the lobby handler.
+		main.attachNetworkHandler(lobby.getHandler());
 	}
 
 	public RoomLobby getLobby() {
@@ -35,15 +36,33 @@ public final class RoomHandler extends NetworkHandler {
 		return gameRooms.get(roomId);
 	}
 
-	public void removeMarkedRooms() {
-		Iterator<Entry<Integer, RoomGame>> iterator = gameRooms.entrySet().iterator();
+	public boolean createGameRoom() {
+		// TODO: Actually set the locals below to sensible values. If no sensible values could be
+		// assigned (EG no unique roomId could be generated) false should be returned to indicate
+		// the room creation has failed.
+		// Perhaps this method should be private as only clients request to create rooms and that
+		// request is handled by this class.
+		String roomName = "";
+		int roomId = 0;
+		int maxPlayers = 0;
 
-		while (iterator.hasNext()) {
-			Entry<Integer, RoomGame> entry = iterator.next();
+		RoomGame room = new RoomGame(roomName, roomId, maxPlayers);
 
-			if (entry.getValue().shouldRemove()) {
-				iterator.remove();
-			}
+		main.attachNetworkHandler(room.getHandler());
+
+		gameRooms.put(roomId, room);
+
+		return true;
+	}
+
+	public void destroyGameRoom(int roomId) {
+		if (hasGameRoom(roomId)) {
+			RoomGame room = getGameRoom(roomId);
+
+			room.destroy();
+			main.detachNetworkHandler(room.getHandler());
+
+			gameRooms.remove(roomId);
 		}
 	}
 }

@@ -73,7 +73,7 @@ public final class PlayerHandler extends NetworkHandler {
 				// credentials did not verify with the master server and then drop him.
 
 				// Main.getServerInstance().send(clientId, packet);
-				Main.getServerInstance().disconnect(clientId);
+				server.disconnect(clientId);
 			}
 		}
 
