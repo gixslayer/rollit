@@ -13,9 +13,8 @@ import org.insomnia.rollit.shared.network.ServerHandler;
 
 public final class Main implements ServerHandler {
 	public static final Scanner SCANNER = new Scanner(System.in);
-
-	private static final int MIN_PORT = 0;
-	private static final int MAX_PORT = 65536;
+	public static final int MIN_PORT = 0;
+	public static final int MAX_PORT = 65536;
 
 	private static Main instance = null;
 

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class Room {
+	public static final int MAX_PLAYERS_INFINITE = -1;
+
 	private final Map<Integer, Player> players;
 	private final String name;
 	private final int roomId;
@@ -20,7 +22,7 @@ public abstract class Room {
 	}
 
 	public boolean hasSpace() {
-		return maxPlayers == -1 ? true : maxPlayers - players.size() > 0;
+		return maxPlayers == MAX_PLAYERS_INFINITE ? true : maxPlayers - players.size() > 0;
 	}
 
 	public String getName() {
@@ -46,8 +48,7 @@ public abstract class Room {
 	public boolean addPlayer(Player player) {
 		boolean result = false;
 
-		if (hasSpace() && !hasPlayer(player)) {
-			player.setCurrentRoom(this);
+		if (hasSpace() && !hasPlayer(player.getClientId())) {
 			players.put(player.getClientId(), player);
 
 			result = true;
@@ -56,13 +57,11 @@ public abstract class Room {
 		return result;
 	}
 
-	public void removePlayer(Player player) {
-		players.remove(player.getClientId());
-
-		player.setCurrentRoom(null);
+	public void removePlayer(int clientId) {
+		players.remove(clientId);
 	}
 
-	public boolean hasPlayer(Player player) {
-		return players.containsKey(player.getClientId());
+	public boolean hasPlayer(int clientId) {
+		return players.containsKey(clientId);
 	}
 }

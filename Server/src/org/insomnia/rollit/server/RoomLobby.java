@@ -5,6 +5,8 @@ public final class RoomLobby extends Room {
 	public static final int LOBBY_ROOM_ID = 0;
 
 	public RoomLobby() {
-		super(LOBBY_ROOM_NAME, LOBBY_ROOM_ID, -1, new RoomLobbyHandler());
+		super(LOBBY_ROOM_NAME, LOBBY_ROOM_ID, MAX_PLAYERS_INFINITE, new RoomLobbyHandler());
+
+		((RoomLobbyHandler) getHandler()).setRoom(this);
 	}
 }

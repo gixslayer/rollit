@@ -5,6 +5,7 @@ import java.util.Map;
 
 /**
  * Controls the switching/creation and lifetime of rooms.
+ * 
  * @author ciske
  * 
  */

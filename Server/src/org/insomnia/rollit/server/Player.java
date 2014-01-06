@@ -8,6 +8,7 @@ public final class Player {
 	public Player(int argClientId, String argName) {
 		this.clientId = argClientId;
 		this.name = argName;
+		this.currentRoom = null;
 	}
 
 	public int getClientId() {
@@ -22,14 +23,18 @@ public final class Player {
 		return currentRoom;
 	}
 
-	public void setCurrentRoom(Room room) {
-		currentRoom = room;
-	}
-
 	public boolean switchRoom(Room room) {
 		boolean result = false;
 
-		if (room.addPlayer(this)) {
+		if (room.hasPlayer(clientId)) {
+			// The player is already in the room and no switching is required.
+			result = true;
+		} else if (room.addPlayer(this)) {
+			// Joined the room successfully, remove the player from his old room (if he had one).
+			if (currentRoom != null) {
+				currentRoom.removePlayer(clientId);
+			}
+
 			currentRoom = room;
 
 			result = true;
@@ -41,10 +46,9 @@ public final class Player {
 	public void moveToLobby() {
 		RoomLobby lobby = Main.getInstance().getRoomHandler().getLobby();
 
-		if (!lobby.hasPlayer(this)) {
-			// TODO: Verify that joining the lobby should never fail.
-			lobby.addPlayer(this);
-			setCurrentRoom(lobby);
+		if (!switchRoom(lobby)) {
+			// This should never occur.
+			throw new RuntimeException("Could not move client " + clientId + " to lobby");
 		}
 	}
 }
